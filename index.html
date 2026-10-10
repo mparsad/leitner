@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f2f2f3">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Leitner">
+<title>Leitner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;700&family=Barlow+Condensed:wght@400;600&family=Vazirmatn:wght@400;500&display=swap">
+<style>
+:root{
+  --color-bg:#f2f2f3;--color-surface:#e9e9ea;--color-text:#1d1f20;--color-accent:#5980a6;
+  --color-divider:color-mix(in srgb,#1d1f20 16%,transparent);
+  --color-neutral-100:#f5f5f8;--color-neutral-200:#e7e7ea;--color-neutral-300:#d4d4d7;--color-neutral-400:#b7b7ba;
+  --color-neutral-500:#98989b;--color-neutral-600:#7a7a7d;--color-neutral-700:#5d5d60;--color-neutral-800:#424244;--color-neutral-900:#2b2b2d;
+  --color-accent-100:#eef6ff;--color-accent-200:#d6ebff;--color-accent-600:#597ea3;--color-accent-700:#416180;--color-accent-800:#2c455d;--color-accent-900:#1d2d3d;
+  --font-heading:"Barlow Condensed",system-ui,sans-serif;--font-body:"Barlow",system-ui,sans-serif;
+  --space-1:3.4px;--space-2:6.8px;--space-3:10.2px;--space-4:13.6px;--space-6:20.4px;--space-8:27.2px;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body);font-size:15px;line-height:1.55}
+h1,h2,h3,h4,h5,h6{font-family:var(--font-heading);font-weight:600;line-height:1.12;letter-spacing:-.015em;margin:0 0 var(--space-2)}
+h1{font-size:42px}h2{font-size:32px}h6{font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+p{margin:0 0 var(--space-3)}
+:focus{outline:none}:focus-visible{outline:2px solid var(--color-accent);outline-offset:2px}
+.blueprint{position:relative;border:1px solid var(--color-divider)}
+.blueprint>.corner{position:absolute;width:11px;height:11px;color:color-mix(in srgb,var(--color-text) 55%,transparent)}
+.blueprint>.corner::before,.blueprint>.corner::after{content:"";position:absolute;background:currentColor}
+.blueprint>.corner::before{left:5px;top:0;width:1px;height:100%}
+.blueprint>.corner::after{top:5px;left:0;width:100%;height:1px}
+.corner.tl{top:-6px;left:-6px}.corner.tr{top:-6px;right:-6px}.corner.bl{bottom:-6px;left:-6px}.corner.br{bottom:-6px;right:-6px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;font-family:var(--font-heading);font-weight:600;font-size:14px;line-height:1.2;color:var(--color-text);background:transparent;border:1px solid var(--color-divider);padding:var(--space-2) 12px}
+.btn svg{display:block}.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-primary{background:var(--color-accent);color:var(--color-bg);border-color:var(--color-accent)}
+.btn-primary:hover:not(:disabled){background:var(--color-accent-600)}.btn-primary:active:not(:disabled){background:var(--color-accent-700)}
+.btn-secondary:hover{background:color-mix(in srgb,var(--color-text) 7%,transparent)}
+.btn-ghost{color:var(--color-accent-700);border-color:transparent}
+.btn-ghost:hover{background:color-mix(in srgb,var(--color-accent) 10%,transparent)}
+.btn-icon{padding:0}
+.field>label{display:block;font-size:12px;margin-bottom:5px;color:color-mix(in srgb,var(--color-text) 70%,transparent)}
+.input{width:100%;min-height:36px;padding:6px 10px;font:inherit;font-size:14px;color:var(--color-text);caret-color:var(--color-accent);background:var(--color-surface);border:1px solid var(--color-divider);border-radius:0}
+.input:hover{border-color:color-mix(in srgb,var(--color-text) 45%,transparent)}
+.input:focus-visible{border-color:var(--color-accent);outline-offset:0}
+textarea.input{min-height:90px;resize:vertical}
+.seg{display:flex;overflow:hidden;border:1px solid var(--color-divider)}
+.seg-opt{display:inline-flex;align-items:center;justify-content:center;flex:1;gap:6px;padding:7px 12px;font-size:13px;cursor:pointer;min-height:40px}
+.seg-opt input{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+.seg-opt+.seg-opt{border-left:1px solid var(--color-divider)}
+.seg-opt:has(input:checked){background:var(--color-accent);color:var(--color-bg)}
+.seg-opt:not(:has(input:checked)):hover{background:color-mix(in srgb,var(--color-text) 7%,transparent)}
+.seg-opt:has(input:focus-visible){outline:2px solid var(--color-accent);outline-offset:-2px}
+.card-kicker{font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+.tag{display:inline-flex;align-items:center;font-size:11px;letter-spacing:.02em;padding:3px 10px;background:transparent}
+.tag-accent{background:var(--color-accent-100);color:var(--color-accent-800)}
+.tag-neutral{background:var(--color-neutral-100);color:var(--color-neutral-800)}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);padding:var(--space-3) var(--space-4)}
+.nav-brand{font-family:var(--font-heading);font-weight:600;font-size:18px}
+.hov:hover{background:color-mix(in srgb,var(--color-accent) 8%,transparent)}
+.cellbtn{all:unset;box-sizing:border-box;cursor:pointer}
+.cellbtn:focus-visible{outline:2px solid var(--color-accent);outline-offset:-2px}
+summary{cursor:pointer}
+.fa{font-family:Vazirmatn,Tahoma,sans-serif}
+.muted{color:var(--color-neutral-700)}
+.row{display:flex;align-items:center}
+.col{display:flex;flex-direction:column}
+.grid-b{display:grid;border-top:1px solid var(--color-divider);border-left:1px solid var(--color-divider)}
+.grid-b>*{border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider)}
+.sticky-b{position:sticky;bottom:0;padding:var(--space-3) 0;background:var(--color-bg);margin-top:auto}
+.ok-msg{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--color-accent-800)}
+.err{font-size:13px;color:var(--color-accent-900);padding:10px 12px;border:1px solid var(--color-divider);background:var(--color-neutral-200)}
+pre.prompt{margin:0;padding:var(--space-3);border:1px solid var(--color-divider);background:var(--color-neutral-100);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;line-height:1.5;white-space:pre-wrap;max-height:200px;overflow:auto}
+</style>
+</head>
+<body>
+<div id="app" style="max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;background:var(--color-bg);border-left:1px solid var(--color-divider);border-right:1px solid var(--color-divider)">
+  <header class="nav" style="border-bottom:1px solid var(--color-divider);position:sticky;top:0;background:var(--color-bg);z-index:5">
+    <div class="nav-brand row" style="gap:8px;letter-spacing:.06em"><span style="width:12px;height:12px;border:1.5px solid var(--color-accent);display:inline-block"></span>LEITNER</div>
+    <span id="todayLabel" style="font-size:12px;letter-spacing:.08em;text-transform:uppercase" class="muted"></span>
+  </header>
+  <main id="main" style="flex:1;padding:var(--space-6) var(--space-4) var(--space-8);display:flex;flex-direction:column;gap:var(--space-6)"></main>
+  <nav id="tabs" style="position:sticky;bottom:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--color-divider);background:var(--color-bg);z-index:5"></nav>
+</div>
+
+<script>
+'use strict';
+/* ───────────── constants & date helpers ───────────── */
+const KEY = 'leitner.v1';
+const IV = { 1: 1, 2: 3, 3: 7, 4: 30 };
+const BOXLBL = { 1: '1 day', 2: '3 days', 3: '1 week', 4: '1 month' };
+const fmt = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+const today = () => fmt(new Date());
+const toDate = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const addDays = (s, n) => { const d = toDate(s); d.setDate(d.getDate() + n); return fmt(d); };
+const diffDays = (a, b) => Math.round((toDate(b) - toDate(a)) / 86400000);
+const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const h = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+const PROMPT = `Read the Longman dictionary screenshot I attach and turn each headword into code in exactly this format. Output only the code. Copy definitions, patterns, synonyms and examples word for word. For several words, repeat word_entry = ... once per word.
+
+word_entry = {
+    "word": "",
+    "syllables": "",
+    "pronunciation": "",
+    "part_of_speech": "",
+    "source": "Longman",
+    "senses": [
+        {
+            "number": 1,
+            "pattern": None,
+            "definition": "",
+            "synonyms": [],
+            "examples": [],
+        },
+    ],
+    "derived_forms": [
+        {"word": "", "part_of_speech": "", "examples": []},
+    ],
+    "persian_meaning": "",
+    "tags": [],
+}`;
+
+/* ───────────── import parser ───────────── */
+function pyToJson(src) {
+  let out = '', i = 0; const n = src.length;
+  while (i < n) {
+    const c = src[i];
+    if (c === '"' || c === "'" || c === '“' || c === '”') {
+      const q = (c === '“' || c === '”') ? null : c; let s = ''; i++;
+      while (i < n && (q ? src[i] !== q : (src[i] !== '”' && src[i] !== '“'))) {
+        if (src[i] === '\\' && i + 1 < n) { const e = src[i + 1]; s += e === 'n' ? '\n' : e === 't' ? '\t' : e; i += 2; continue; }
+        s += src[i]; i++;
+      }
+      i++; out += JSON.stringify(s); continue;
+    }
+    if (c === '#' || (c === '/' && src[i + 1] === '/')) { while (i < n && src[i] !== '\n') i++; continue; }
+    if (/[A-Za-z_]/.test(c)) {
+      let j = i; while (j < n && /\w/.test(src[j])) j++;
+      const w = src.slice(i, j); let k = j; while (k < n && /[ \t]/.test(src[k])) k++;
+      i = j;
+      if (src[k] === '=' && src[k + 1] !== '=') { i = k + 1; out += ' '; continue; }
+      if (w === 'None' || w === 'null' || w === 'undefined') out += 'null';
+      else if (w === 'True' || w === 'true') out += 'true';
+      else if (w === 'False' || w === 'false') out += 'false';
+      else if (src[k] === ':') out += JSON.stringify(w);
+      else out += w;
+      continue;
+    }
+    if (c === '}' || c === ']') { out = out.replace(/,\s*$/, ''); out += c; i++; continue; }
+    if (c === ';') { i++; continue; }
+    out += c; i++;
+  }
+  return out;
+}
+function parseEntries(src) {
+  const js = pyToJson(src);
+  const chunks = []; let depth = 0, start = -1, inStr = false;
+  for (let i = 0; i < js.length; i++) {
+    const c = js[i];
+    if (inStr) { if (c === '\\') { i++; continue; } if (c === '"') inStr = false; continue; }
+    if (c === '"') { inStr = true; continue; }
+    if (c === '{' || c === '[') { if (depth === 0) start = i; depth++; }
+    else if (c === '}' || c === ']') { depth--; if (depth === 0) chunks.push(js.slice(start, i + 1)); }
+  }
+  if (depth !== 0) throw new Error('The code looks cut off — a bracket is not closed.');
+  const items = [];
+  chunks.forEach(ch => { const v = JSON.parse(ch); Array.isArray(v) ? items.push(...v) : items.push(v); });
+  const ok = items.filter(x => x && typeof x === 'object' && x.word);
+  if (!ok.length) throw new Error('No entry with a "word" field was found.');
+  return ok;
+}
+const arr = v => Array.isArray(v) ? v.filter(x => x != null && x !== '').map(String) : (v ? [String(v)] : []);
+function normContent(e) {
+  return {
+    word: String(e.word).trim(), syllables: e.syllables || '', pronunciation: e.pronunciation || '',
+    part_of_speech: e.part_of_speech || '', source: e.source || 'Longman',
+    senses: (e.senses || []).map((s, i) => ({ number: s.number ?? i + 1, pattern: s.pattern || '', definition: s.definition || '', synonyms: arr(s.synonyms), examples: arr(s.examples) })),
+    derived_forms: (e.derived_forms || []).map(d => ({ word: d.word || '', part_of_speech: d.part_of_speech || '', examples: arr(d.examples) })),
+    persian_meaning: e.persian_meaning || '', tags: arr(e.tags).map(t => t.trim()).filter(Boolean)
+  };
+}
+
+/* ───────────── state ───────────── */
+function loadData() {
+  let d = null;
+  try { d = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+  if (!d || !Array.isArray(d.words)) d = { words: [], log: {}, mode: 'flip' };
+  d.log = d.log || {}; d.mode = d.mode || 'flip';
+  d.settings = Object.assign({ accent: 'en-GB', autoSpeak: false, requeueWrong: true }, d.settings || {});
+  return d;
+}
+let D = loadData();
+const S = { screen: 'home', tagFilter: '', session: null, detailId: null, q: '', listFilter: 'all', listTag: '',
+  importText: '', importTags: '', importMsg: '', copied: false,
+  editPersian: '', editTags: '', editRaw: '', rawErr: '', rawOpen: false, savedMsg: '', confirmDelete: false, backupMsg: '' };
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (e) {} };
+const find = id => D.words.find(w => w.id === id);
+
+/* ───────────── svg icons ───────────── */
+const svg = (p, sz = 16) => `<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const ICON = {
+  check: '<path d="M20 6 9 17l-5-5"></path>',
+  x: '<path d="M18 6 6 18"></path><path d="m6 6 12 12"></path>',
+  home: '<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>',
+  plus: '<path d="M5 12h14"></path><path d="M12 5v14"></path>',
+  list: '<path d="M3 12h.01"></path><path d="M3 18h.01"></path><path d="M3 6h.01"></path><path d="M8 12h13"></path><path d="M8 18h13"></path><path d="M8 6h13"></path>',
+  chart: '<path d="M3 3v16a2 2 0 0 0 2 2h16"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path>',
+  vol: '<path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"></path><path d="M16 9a5 5 0 0 1 0 6"></path><path d="M19.364 18.364a9 9 0 0 0 0-12.728"></path>',
+  search: '<circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path>',
+  copy: '<rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>',
+  back: '<path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path>'
+};
+const ic = (k, sz) => svg(ICON[k], sz);
+const CORNERS = '<i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>';
+
+/* ───────────── logic ───────────── */
+function speak(text) {
+  try {
+    const u = new SpeechSynthesisUtterance(text); u.lang = D.settings.accent; u.rate = 0.9;
+    const v = speechSynthesis.getVoices().find(v => v.lang === u.lang || v.lang.replace('_', '-') === u.lang); if (v) u.voice = v;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  } catch (e) {}
+}
+function go(screen, extra) {
+  Object.assign(S, { screen, confirmDelete: false }, extra || {});
+  render(); try { window.scrollTo(0, 0); } catch (e) {}
+}
+const isDue = w => !w.leitner.learned && w.leitner.next_review <= today();
+function dueList() {
+  const tag = S.tagFilter;
+  return D.words.filter(w => isDue(w) && (!tag || w.tags.includes(tag)))
+    .sort((a, b) => a.leitner.box - b.leitner.box || a.leitner.next_review.localeCompare(b.leitner.next_review));
+}
+const allTags = () => [...new Set(D.words.flatMap(w => w.tags))].sort();
+
+function startReview() {
+  const ids = dueList().map(w => w.id); if (!ids.length) return;
+  S.session = { queue: ids, idx: 0, revealed: false, checked: false, typed: '', typedOk: null, retry: {}, correct: 0, wrong: 0, done: false };
+  go('review'); onCardShown();
+}
+function onCardShown() {
+  const s = S.session; if (!s || s.done) return;
+  const w = find(s.queue[s.idx]); if (!w) return;
+  if (D.mode === 'type') { const el = document.querySelector('[data-in="typed"]'); if (el) el.focus(); }
+  else if (D.settings.autoSpeak) speak(w.word);
+}
+function applyGrade(id, ok) {
+  const t = today(); const w = find(id); if (!w) return;
+  const L = w.leitner; let box = L.box;
+  if (ok) { L.correct_count++; if (box >= 4) { L.learned = true; L.learned_date = t; } else box++; }
+  else { L.wrong_count++; box = Math.max(1, box - 1); }
+  L.box = box; L.next_review = addDays(t, IV[box]); L.last_review = t;
+  const lg = D.log[t] || { c: 0, w: 0 }; ok ? lg.c++ : lg.w++; D.log[t] = lg;
+}
+function answer(ok) {
+  const s = S.session; const id = s.queue[s.idx]; const isRetry = !!s.retry[s.idx];
+  if (!isRetry) { applyGrade(id, ok); save(); ok ? s.correct++ : s.wrong++; }
+  if (!ok && D.settings.requeueWrong && !isRetry) { s.queue.push(id); s.retry[s.queue.length - 1] = true; }
+  Object.assign(s, { idx: s.idx + 1, revealed: false, checked: false, typed: '', typedOk: null, gaveUp: false });
+  if (s.idx >= s.queue.length) s.done = true;
+  render(); try { window.scrollTo(0, 0); } catch (e) {}
+  setTimeout(onCardShown, 30);
+}
+function checkTyped(giveUp) {
+  const s = S.session; const w = find(s.queue[s.idx]);
+  const norm = x => x.toLowerCase().trim().replace(/^to\s+/, '').replace(/\s+/g, ' ');
+  if (!giveUp && !s.typed.trim()) return;
+  s.checked = true; s.revealed = true; s.typedOk = !giveUp && norm(s.typed) === norm(w.word); s.gaveUp = !!giveUp;
+  render(); if (D.settings.autoSpeak) speak(w.word);
+}
+
+let _ic = null;
+function importParse() {
+  const txt = S.importText;
+  if (_ic && _ic.txt === txt) return _ic;
+  const r = { txt, items: [], raw: [], error: '' };
+  if (txt.trim()) { try { r.raw = parseEntries(txt); r.items = r.raw.map(normContent); } catch (e) { r.error = 'Could not read this code: ' + (e.message || e); } }
+  _ic = r; return r;
+}
+function doImport() {
+  const { items, raw } = importParse(); if (!items.length) return;
+  const extra = S.importTags.split(',').map(x => x.trim()).filter(Boolean);
+  const t = today(); let added = 0, updated = 0;
+  items.forEach((c, i) => {
+    c.tags = [...new Set([...c.tags, ...extra])];
+    const ex = D.words.find(w => w.word.toLowerCase() === c.word.toLowerCase());
+    if (ex) { const tags = [...new Set([...ex.tags, ...c.tags])]; Object.assign(ex, c, { tags, persian_meaning: c.persian_meaning || ex.persian_meaning }); updated++; }
+    else {
+      const rb = raw[i] && raw[i].leitner && Number(raw[i].leitner.box);
+      const box = rb >= 1 && rb <= 4 ? rb : 1;
+      D.words.push({ id: 'w' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), ...c,
+        leitner: { box, added_date: t, next_review: addDays(t, IV[box]), correct_count: 0, wrong_count: 0, learned: false } });
+      added++;
+    }
+  });
+  save();
+  const parts = []; if (added) parts.push(added + ' added to Box 1'); if (updated) parts.push(updated + ' updated (progress kept)');
+  S.importText = ''; S.importTags = ''; S.importMsg = parts.join(' · ') + '. First review: tomorrow.'; _ic = null;
+  render();
+}
+function copyPrompt() {
+  const done = () => { S.copied = true; render(); setTimeout(() => { S.copied = false; render(); }, 1800); };
+  const fallback = () => { const ta = document.createElement('textarea'); ta.value = PROMPT; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) {} ta.remove(); done(); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(PROMPT).then(done, fallback); else fallback();
+}
+function openDetail(id) {
+  const w = find(id); if (!w) return;
+  const { id: _, ...rest } = w;
+  go('detail', { detailId: id, editPersian: w.persian_meaning, editTags: w.tags.join(', '), editRaw: JSON.stringify(rest, null, 2), rawErr: '', savedMsg: '' });
+}
+function updateWord(id, fn, msg) {
+  const w = find(id); if (!w) return;
+  fn(w); save();
+  const { id: _, ...rest } = w;
+  S.editRaw = JSON.stringify(rest, null, 2); S.savedMsg = msg || '';
+  render();
+  if (msg) setTimeout(() => { S.savedMsg = ''; if (S.screen === 'detail') render(); }, 1800);
+}
+function moveTo(id, n) {
+  updateWord(id, w => {
+    const t = today();
+    if (n === 5) { w.leitner.learned = true; w.leitner.learned_date = t; w.leitner.box = 4; }
+    else { w.leitner.learned = false; w.leitner.box = n; w.leitner.next_review = addDays(t, IV[n]); }
+  });
+}
+function saveRaw() {
+  const id = S.detailId; const old = find(id);
+  try {
+    const e = parseEntries(S.editRaw)[0]; const c = normContent(e);
+    const L = Object.assign({}, old.leitner, e.leitner || {});
+    L.box = Math.min(4, Math.max(1, Number(L.box) || 1));
+    S.rawErr = ''; S.editPersian = c.persian_meaning; S.editTags = c.tags.join(', ');
+    updateWord(id, w => { Object.assign(w, c, { leitner: L }); }, 'Saved');
+  } catch (err) { S.rawErr = 'Could not read this code: ' + (err.message || err); render(); }
+}
+const rel = w => {
+  if (w.leitner.learned) return 'Done';
+  const d = diffDays(today(), w.leitner.next_review);
+  return d <= 0 ? 'Due now' : d === 1 ? 'Tomorrow' : 'In ' + d + ' days';
+};
+
+/* backup */
+function exportBackup() {
+  const blob = new Blob([JSON.stringify(D, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'leitner-backup-' + today() + '.json';
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  S.backupMsg = 'Backup downloaded.'; render();
+}
+function importBackup(file) {
+  const fr = new FileReader();
+  fr.onload = () => {
+    try {
+      const d = JSON.parse(fr.result);
+      if (!d || !Array.isArray(d.words)) throw new Error('not a Leitner backup');
+      if (!confirm('Replace ALL current data with this backup (' + d.words.length + ' words)?')) return;
+      localStorage.setItem(KEY, JSON.stringify(d)); D = loadData(); S.backupMsg = 'Backup restored: ' + D.words.length + ' words.'; render();
+    } catch (e) { S.backupMsg = 'Could not restore: ' + e.message; render(); }
+  };
+  fr.readAsText(file);
+}
+
+/* ───────────── views ───────────── */
+const btnP = (act, label, style, extra) => `<button class="btn btn-primary blueprint" style="${style}" data-act="${act}" ${extra || ''}>${CORNERS}${label}</button>`;
+
+function entryHeader(w) {
+  const L = w.leitner;
+  const boxLabel = L.learned ? 'Learned' : 'Box ' + L.box + ' · ' + BOXLBL[L.box];
+  return `<section class="blueprint col" style="padding:var(--space-6) var(--space-4) var(--space-4);gap:var(--space-2)">${CORNERS}
+    <div class="row" style="justify-content:space-between;gap:8px"><span class="tag tag-accent">${h(boxLabel)}</span><span style="font-size:10px;letter-spacing:.12em;text-transform:uppercase" class="muted">${h(w.source)}</span></div>
+    <h1 style="font-size:54px;margin:var(--space-6) 0 0;line-height:1;word-break:break-word">${h(w.word)}</h1>
+    <div class="row" style="gap:var(--space-3);flex-wrap:wrap">
+      <span style="font-size:15px" class="muted">${h(w.syllables)}</span><span style="font-size:15px">${h(w.pronunciation)}</span>
+      <button class="btn btn-icon" style="width:44px;height:44px;color:var(--color-accent-700)" data-act="speak" data-id="${h(w.id)}" aria-label="Play pronunciation">${ic('vol', 20)}</button>
+    </div>
+    <span style="font-style:italic;color:var(--color-accent-700);font-size:15px">${h(w.part_of_speech)}</span>
+  </section>`;
+}
+function entryBody(w) {
+  const ex = (a, pad) => a.map(e => `<span style="font-size:14px;font-style:italic;color:var(--color-neutral-800);${pad ? 'padding-left:18px' : ''}">› ${h(e)}</span>`).join('');
+  const senses = w.senses.map(s => `<div style="display:grid;grid-template-columns:30px minmax(0,1fr);gap:var(--space-3);padding:var(--space-4) 0;border-bottom:1px solid var(--color-divider)">
+      <span style="font-family:var(--font-heading);font-weight:600;font-size:24px;color:var(--color-accent);line-height:1">${h(s.number)}</span>
+      <div class="col" style="gap:6px">
+        ${s.pattern ? `<span style="font-weight:700;font-size:14px">${h(s.pattern)}</span>` : ''}
+        <span style="font-size:16px;line-height:1.45;text-wrap:pretty">${h(s.definition)}</span>
+        ${s.synonyms.length ? `<span class="row" style="gap:6px;font-size:13px"><span class="tag tag-neutral" style="padding:1px 6px;font-size:10px;letter-spacing:.08em">SYN</span>${h(s.synonyms.join(', '))}</span>` : ''}
+        ${ex(s.examples)}
+      </div></div>`).join('');
+  const derived = w.derived_forms.filter(d => d.word).map(d => `<div class="col" style="gap:4px;padding:var(--space-4) 0;border-bottom:1px solid var(--color-divider)">
+      <div class="row" style="align-items:baseline;gap:8px"><span style="font-size:11px" class="muted">—</span><span style="font-weight:700;font-size:15px">${h(d.word)}</span><span style="font-size:13px;font-style:italic;color:var(--color-accent-700)">${h(d.part_of_speech)}</span></div>
+      ${ex(d.examples, true)}</div>`).join('');
+  const fa = w.persian_meaning ? `<div class="row" style="justify-content:space-between;gap:12px;padding:var(--space-4) 0;border-bottom:1px solid var(--color-divider)"><span style="font-size:10px;letter-spacing:.12em" class="muted">FA</span><span dir="rtl" class="fa" style="font-size:17px;text-align:right">${h(w.persian_meaning)}</span></div>` : '';
+  const tags = w.tags.length ? `<div class="row" style="gap:6px;flex-wrap:wrap;padding:var(--space-3) 0">${w.tags.map(t => `<span class="tag tag-neutral">${h(t)}</span>`).join('')}</div>` : '';
+  return `<section class="col" style="border-top:1px solid var(--color-divider)">${senses}${derived}${fa}${tags}</section>`;
+}
+
+function homeView() {
+  const words = D.words, active = words.filter(w => !w.leitner.learned), learned = words.filter(w => w.leitner.learned);
+  const tags = allTags(); const tag = tags.includes(S.tagFilter) ? S.tagFilter : ''; S.tagFilter = tag;
+  const due = dueList(), t = today();
+  let note;
+  if (!words.length) note = 'No words yet. Add your first Longman entry.';
+  else if (due.length) note = 'Knew it moves a word up one box. Didn’t know moves it back one.';
+  else {
+    const up = active.filter(w => !tag || w.tags.includes(tag)).map(w => w.leitner.next_review).sort()[0];
+    if (!up) note = 'All caught up — nothing left in rotation.';
+    else { const n = active.filter(w => w.leitner.next_review === up).length; const dd = diffDays(t, up); note = 'All caught up. Next: ' + (dd === 1 ? 'tomorrow' : 'in ' + dd + ' days') + ' · ' + n + (n === 1 ? ' word' : ' words') + '.'; }
+  }
+  const boxes = [1, 2, 3, 4].map(n => {
+    const inb = active.filter(w => w.leitner.box === n); const dn = inb.filter(isDue).length;
+    return `<button class="cellbtn hov col" data-act="box" data-n="${n}" style="padding:var(--space-3);gap:4px;min-height:132px">
+      <span style="font-size:10px;letter-spacing:.12em;color:var(--color-accent-700)">BOX 0${n}</span>
+      <span style="font-family:var(--font-heading);font-weight:600;font-size:15px;text-transform:uppercase;line-height:1.1">${BOXLBL[n]}</span>
+      <span style="font-family:var(--font-heading);font-weight:600;font-size:38px;line-height:1;margin-top:auto">${inb.length}</span>
+      <span style="font-size:11px" class="muted">${dn ? dn + ' due' : 'none due'}</span></button>`;
+  }).join('');
+  return `<section class="blueprint col" style="padding:var(--space-6) var(--space-4) var(--space-4);gap:var(--space-4)">${CORNERS}
+      <div class="row" style="justify-content:space-between;align-items:baseline;gap:8px"><span class="card-kicker" style="color:var(--color-accent-700)">Due today</span><span style="font-size:12px" class="muted">${active.length} in rotation</span></div>
+      <div style="font-family:var(--font-heading);font-weight:600;font-size:104px;line-height:.85;letter-spacing:-.03em">${due.length}</div>
+      <div style="font-size:14px;text-wrap:pretty" class="muted">${h(note)}</div>
+      <div class="col" style="gap:6px"><span style="font-size:12px" class="muted">Review mode</span>
+        <div class="seg">
+          <label class="seg-opt"><input type="radio" name="mode" data-act="mode" data-v="flip" ${D.mode === 'flip' ? 'checked' : ''}>Flip card</label>
+          <label class="seg-opt"><input type="radio" name="mode" data-act="mode" data-v="type" ${D.mode === 'type' ? 'checked' : ''}>Type the word</label>
+        </div></div>
+      ${tags.length ? `<div class="field"><label>Topic</label><select class="input" data-in="tagFilter" data-r="1"><option value="">All topics</option>${tags.map(x => `<option value="${h(x)}" ${x === tag ? 'selected' : ''}>${h(x)}</option>`).join('')}</select></div>` : ''}
+      ${btnP('start', 'START REVIEW', 'min-height:52px;font-size:18px;letter-spacing:.04em', due.length ? '' : 'disabled')}
+    </section>
+    <section class="col" style="gap:var(--space-3)">
+      <h6 style="margin:0" class="muted">Boxes</h6>
+      <div class="grid-b" style="grid-template-columns:repeat(4,minmax(0,1fr))">${boxes}
+        <button class="cellbtn hov row" data-act="learned" style="grid-column:1 / -1;padding:var(--space-3);justify-content:space-between;min-height:52px">
+          <span class="row" style="gap:8px"><span style="color:var(--color-accent-700)">${ic('check')}</span><span style="font-family:var(--font-heading);font-weight:600;font-size:15px;text-transform:uppercase">Learned</span></span>
+          <span style="font-family:var(--font-heading);font-weight:600;font-size:24px">${learned.length}</span></button>
+      </div></section>`;
+}
+
+function importDyn() {
+  const ip = importParse(); const existing = new Set(D.words.map(w => w.word.toLowerCase()));
+  const rows = ip.items.map(c => {
+    const meta = [c.part_of_speech, c.senses.length + (c.senses.length === 1 ? ' sense' : ' senses'), c.derived_forms.length ? c.derived_forms.length + ' derived' : ''].filter(Boolean).join(' · ');
+    return `<div class="row" style="justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid var(--color-divider)"><div class="col" style="min-width:0"><span style="font-family:var(--font-heading);font-weight:600;font-size:20px">${h(c.word)}</span><span style="font-size:12px" class="muted">${h(meta)}</span></div><span class="tag tag-accent">${existing.has(c.word.toLowerCase()) ? 'Update' : 'New'}</span></div>`;
+  }).join('');
+  return `${ip.error ? `<div class="err">${h(ip.error)}</div>` : ''}
+    ${ip.items.length ? `<div class="col" style="border-top:1px solid var(--color-divider)">${rows}</div>
+      <div class="field"><label>Topic tags for these words (comma separated)</label><input class="input" data-in="importTags" value="${h(S.importTags)}" placeholder="e.g. weather, IELTS"></div>` : ''}
+    ${btnP('import', ip.items.length > 1 ? 'IMPORT ' + ip.items.length + ' WORDS' : 'IMPORT WORD', 'min-height:48px;font-size:16px', ip.items.length ? '' : 'disabled')}
+    ${S.importMsg ? `<div class="ok-msg">${ic('check')}${h(S.importMsg)}</div>` : ''}`;
+}
+function addView() {
+  return `<div><h2 style="margin-bottom:4px">Add words</h2><p style="margin:0;font-size:14px;text-wrap:pretty" class="muted">Paste the code Claude gives you from a Longman screenshot. Several entries at once is fine. New words go into Box 1.</p></div>
+    <div class="field"><label>Entry code</label><textarea class="input" data-in="importText" data-live="import" style="min-height:220px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;line-height:1.5" placeholder="word_entry = { &quot;word&quot;: &quot;…&quot;, … }" spellcheck="false">${h(S.importText)}</textarea></div>
+    <div id="impdyn" class="col" style="gap:var(--space-6)">${importDyn()}</div>
+    <section class="blueprint col" style="padding:var(--space-4);gap:var(--space-3);margin-top:var(--space-4)">${CORNERS}
+      <span class="card-kicker" style="color:var(--color-accent-700)">How to get the code</span>
+      <ol style="margin:0;padding-left:20px;font-size:14px;display:flex;flex-direction:column;gap:4px"><li>Take a screenshot of the word on Longman.</li><li>Send it to Claude together with the prompt below.</li><li>Paste Claude’s code in the box above.</li></ol>
+      <pre class="prompt">${h(PROMPT)}</pre>
+      <button class="btn btn-secondary" style="min-height:44px" data-act="copy">${ic('copy')}${S.copied ? 'Copied' : 'Copy prompt for Claude'}</button>
+    </section>`;
+}
+
+function listDyn() {
+  const t = today(), tags = allTags(), listTag = tags.includes(S.listTag) ? S.listTag : '';
+  const q = S.q.trim().toLowerCase(), lf = S.listFilter;
+  const list = D.words.filter(w => {
+    if (lf === 'due' && !isDue(w)) return false;
+    if (lf === 'learned' && !w.leitner.learned) return false;
+    if (lf[0] === 'b' && (w.leitner.learned || w.leitner.box !== Number(lf[1]))) return false;
+    if (listTag && !w.tags.includes(listTag)) return false;
+    if (q) { const hay = [w.word, w.persian_meaning, ...w.tags, ...w.senses.map(s => s.definition), ...w.derived_forms.map(d => d.word)].join(' ').toLowerCase(); if (!hay.includes(q)) return false; }
+    return true;
+  }).sort((a, b) => a.word.localeCompare(b.word));
+  const rows = list.map(w => `<button class="cellbtn hov" data-act="open" data-id="${h(w.id)}" style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 4px;border-bottom:1px solid var(--color-divider)">
+      <div class="col" style="gap:2px;min-width:0"><div class="row" style="align-items:baseline;gap:8px"><span style="font-family:var(--font-heading);font-weight:600;font-size:21px">${h(w.word)}</span><span style="font-size:12px;font-style:italic;color:var(--color-accent-700)">${h(w.part_of_speech)}</span></div>
+        <span style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" class="muted">${h((w.senses[0] && w.senses[0].definition) || w.persian_meaning)}</span></div>
+      <div class="col" style="align-items:flex-end;gap:4px"><span class="tag tag-accent">${w.leitner.learned ? 'Learned' : 'Box ' + w.leitner.box}</span><span style="font-size:11px" class="muted">${rel(w)}</span></div></button>`).join('');
+  return `<span style="font-size:12px" class="muted">${list.length} ${list.length === 1 ? 'word' : 'words'}</span>
+    <div class="col" style="border-top:1px solid var(--color-divider)">${rows}</div>
+    ${list.length ? '' : '<p style="text-align:center;font-size:14px;padding:var(--space-6) 0" class="muted">No words match.</p>'}`;
+}
+function wordsView() {
+  const tags = allTags(), listTag = tags.includes(S.listTag) ? S.listTag : '';
+  const fdefs = [['all', 'All'], ['due', 'Due'], ['b1', '1 day'], ['b2', '3 days'], ['b3', '1 week'], ['b4', '1 month'], ['learned', 'Learned']];
+  return `<div class="col" style="gap:var(--space-3)">
+      <div style="position:relative"><span style="position:absolute;left:12px;top:14px;color:var(--color-neutral-700)">${ic('search')}</span>
+        <input class="input" data-in="q" data-live="list" style="padding-left:36px;min-height:44px;font-size:15px" value="${h(S.q)}" placeholder="Search words, meanings, tags"></div>
+      <div class="row" style="gap:6px;flex-wrap:wrap">${fdefs.map(([k, l]) => `<button class="tag ${S.listFilter === k ? 'tag-accent' : ''}" data-act="filter" data-v="${k}" style="cursor:pointer;font-family:var(--font-body);font-size:12px;min-height:34px;padding:0 12px;border:1px solid var(--color-divider)">${l}</button>`).join('')}</div>
+      ${tags.length ? `<select class="input" data-in="listTag" data-r="1"><option value="">All topics</option>${tags.map(x => `<option value="${h(x)}" ${x === listTag ? 'selected' : ''}>${h(x)}</option>`).join('')}</select>` : ''}
+    </div>
+    <div id="listdyn" class="col" style="gap:var(--space-3)">${listDyn()}</div>`;
+}
+
+function statsView() {
+  const words = D.words, t = today(), active = words.filter(w => !w.leitner.learned), learned = words.filter(w => w.leitner.learned);
+  let tc = 0, tw = 0; words.forEach(w => { tc += w.leitner.correct_count || 0; tw += w.leitner.wrong_count || 0; });
+  const lt = D.log[t] || { c: 0, w: 0 };
+  const tiles = [['Words', words.length], ['Learned', learned.length], ['Accuracy', tc + tw ? Math.round(tc / (tc + tw) * 100) + '%' : '—'], ['Reviewed today', lt.c + lt.w]]
+    .map(([l, v]) => `<div class="col" style="padding:var(--space-4) var(--space-3);gap:4px"><span style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-accent-700)">${l}</span><span style="font-family:var(--font-heading);font-weight:600;font-size:40px;line-height:1">${v}</span></div>`).join('');
+  const tot = Math.max(1, words.length);
+  const dist = [1, 2, 3, 4].map(n => ({ label: BOXLBL[n], count: active.filter(w => w.leitner.box === n).length }));
+  dist.push({ label: 'Learned', count: learned.length });
+  const bars = dist.map(r => `<div style="display:grid;grid-template-columns:84px minmax(0,1fr) 32px;gap:10px;align-items:center"><span style="font-size:13px">${r.label}</span><div style="height:14px;border:1px solid var(--color-divider);position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:${Math.round(r.count / tot * 100)}%;background:var(--color-accent)"></div></div><span style="font-family:var(--font-heading);font-weight:600;font-size:16px;text-align:right">${r.count}</span></div>`).join('');
+  const d14 = []; for (let i = 13; i >= 0; i--) { const ds = addDays(t, -i); d14.push({ ds, lg: D.log[ds] || { c: 0, w: 0 } }); }
+  const mx = Math.max(1, ...d14.map(x => x.lg.c + x.lg.w));
+  const cols = d14.map(x => `<div class="col" style="height:100%;justify-content:flex-end"><div style="height:${x.lg.w / mx * 100}%;background:var(--color-neutral-400)"></div><div style="height:${x.lg.c / mx * 100}%;background:var(--color-accent)"></div></div>`).join('');
+  const lbls = d14.map(x => `<span style="font-size:10px;text-align:center;color:${x.ds === t ? 'var(--color-accent-700)' : 'var(--color-neutral-700)'}">${toDate(x.ds).getDate()}</span>`).join('');
+  const fc = []; for (let i = 0; i < 7; i++) { const ds = addDays(t, i); fc.push(`<div class="col" style="padding:10px 4px;align-items:center;gap:2px"><span style="font-size:10px;letter-spacing:.06em;text-transform:uppercase" class="muted">${i === 0 ? 'Today' : toDate(ds).toLocaleDateString('en-GB', { weekday: 'short' })}</span><span style="font-family:var(--font-heading);font-weight:600;font-size:22px">${active.filter(w => i === 0 ? w.leitner.next_review <= t : w.leitner.next_review === ds).length}</span></div>`); }
+  const st = D.settings;
+  return `<h2 style="margin:0">Progress</h2>
+    <div class="grid-b" style="grid-template-columns:repeat(2,minmax(0,1fr))">${tiles}</div>
+    <section class="col" style="gap:var(--space-3)"><h6 style="margin:0" class="muted">Words by box</h6>${bars}</section>
+    <section class="blueprint col" style="padding:var(--space-4);gap:var(--space-3)">${CORNERS}
+      <div class="row" style="justify-content:space-between;align-items:baseline;gap:8px"><h6 style="margin:0" class="muted">Reviews · last 14 days</h6>
+        <div class="row muted" style="gap:10px;font-size:11px"><span class="row" style="gap:4px"><span style="width:8px;height:8px;background:var(--color-accent);display:inline-block"></span>Knew</span><span class="row" style="gap:4px"><span style="width:8px;height:8px;background:var(--color-neutral-400);display:inline-block"></span>Missed</span></div></div>
+      <div style="display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:4px;height:120px;align-items:end;border-bottom:1px solid var(--color-divider)">${cols}</div>
+      <div style="display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:4px">${lbls}</div></section>
+    <section class="col" style="gap:var(--space-3)"><h6 style="margin:0" class="muted">Coming up</h6><div class="grid-b" style="grid-template-columns:repeat(7,minmax(0,1fr))">${fc.join('')}</div></section>
+    <section class="col" style="gap:var(--space-3);padding-top:var(--space-3);border-top:1px solid var(--color-divider)"><h6 style="margin:0" class="muted">Settings</h6>
+      <span style="font-size:12px" class="muted">Pronunciation accent</span>
+      <div class="seg"><label class="seg-opt"><input type="radio" name="acc" data-act="accent" data-v="en-GB" ${st.accent === 'en-GB' ? 'checked' : ''}>British</label><label class="seg-opt"><input type="radio" name="acc" data-act="accent" data-v="en-US" ${st.accent === 'en-US' ? 'checked' : ''}>American</label></div>
+      <label class="row" style="gap:10px;font-size:14px;min-height:36px;cursor:pointer"><input type="checkbox" data-act="toggle" data-v="autoSpeak" ${st.autoSpeak ? 'checked' : ''}>Speak the word automatically</label>
+      <label class="row" style="gap:10px;font-size:14px;min-height:36px;cursor:pointer"><input type="checkbox" data-act="toggle" data-v="requeueWrong" ${st.requeueWrong ? 'checked' : ''}>Repeat missed words at the end of the session</label>
+      <span style="font-size:12px" class="muted">Backup</span>
+      <div class="row" style="gap:var(--space-3);flex-wrap:wrap"><button class="btn btn-secondary" style="min-height:44px;padding:0 16px" data-act="export">Download backup</button>
+        <button class="btn btn-secondary" style="min-height:44px;padding:0 16px" data-act="restore">Restore backup</button><input type="file" id="restoreFile" accept="application/json,.json" style="display:none"></div>
+      ${S.backupMsg ? `<span style="font-size:13px;color:var(--color-accent-800)">${h(S.backupMsg)}</span>` : ''}
+    </section>`;
+}
+
+function reviewView() {
+  const s = S.session; if (!s) return '';
+  if (s.done) {
+    const left = dueList().length;
+    return `<section class="blueprint col" style="padding:var(--space-8) var(--space-4) var(--space-4);gap:var(--space-4)">${CORNERS}
+      <span class="card-kicker" style="color:var(--color-accent-700)">Session complete</span>
+      <div class="grid-b" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+        <div style="padding:var(--space-4) var(--space-3)"><div style="font-size:10px;letter-spacing:.12em;color:var(--color-accent-700)">MOVED UP</div><div style="font-family:var(--font-heading);font-weight:600;font-size:48px;line-height:1">${s.correct}</div></div>
+        <div style="padding:var(--space-4) var(--space-3)"><div style="font-size:10px;letter-spacing:.12em" class="muted">MOVED BACK</div><div style="font-family:var(--font-heading);font-weight:600;font-size:48px;line-height:1">${s.wrong}</div></div></div>
+      <span style="font-size:14px" class="muted">${left ? left + ' still due today.' : 'Nothing else due today.'}</span>
+      ${btnP('exit', 'BACK TO TODAY', 'min-height:50px;font-size:16px')}</section>`;
+  }
+  const cur = find(s.queue[s.idx]); const isType = D.mode === 'type'; const isRetry = !!s.retry[s.idx];
+  const L = cur.leitner;
+  const upLbl = L.box >= 4 ? 'Learned ✓' : 'Box ' + (L.box + 1) + ' · ' + BOXLBL[L.box + 1];
+  const downB = Math.max(1, L.box - 1), downLbl = 'Box ' + downB + ' · ' + BOXLBL[downB];
+  const top = `<div class="row" style="gap:var(--space-3)"><span style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap" class="muted">${Math.min(s.idx + 1, s.queue.length)} / ${s.queue.length}${isRetry ? ' · again' : ''}</span>
+    <div style="flex:1;height:4px;background:var(--color-neutral-300);position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:${Math.round(s.idx / Math.max(1, s.queue.length) * 100)}%;background:var(--color-accent)"></div></div>
+    <button class="btn btn-icon" style="width:40px;height:40px" data-act="exit" aria-label="End review">${ic('x', 18)}</button></div>`;
+  let out = top;
+  if (isType) {
+    const re = new RegExp(escRe(cur.word.slice(0, Math.max(3, cur.word.length - 2))) + '\\w*', 'gi');
+    const mask = str => str.replace(re, '_____');
+    const senses = cur.senses.map(x => `<div style="display:grid;grid-template-columns:22px minmax(0,1fr);gap:8px"><span style="font-family:var(--font-heading);font-weight:600;font-size:18px;color:var(--color-accent);line-height:1.3">${h(x.number)}</span><div class="col" style="gap:4px"><span style="font-size:16px;line-height:1.45;text-wrap:pretty">${h(mask(x.definition))}</span>${x.examples.map(e => `<span style="font-size:14px;font-style:italic;color:var(--color-neutral-800)">› ${h(mask(e))}</span>`).join('')}</div></div>`).join('');
+    const boxLabel = 'Box ' + L.box + ' · ' + BOXLBL[L.box];
+    out += `<section class="blueprint col" style="padding:var(--space-6) var(--space-4) var(--space-4);gap:var(--space-3)">${CORNERS}
+      <div class="row" style="justify-content:space-between;gap:8px"><span class="card-kicker" style="color:var(--color-accent-700)">Which word is it?</span><span class="tag tag-accent">${h(boxLabel)}</span></div>
+      <span style="font-style:italic;color:var(--color-accent-700);font-size:15px">${h(cur.part_of_speech)}</span>${senses}
+      ${cur.persian_meaning ? `<div dir="rtl" class="fa" style="font-size:16px;text-align:right">${h(cur.persian_meaning)}</div>` : ''}
+      ${!s.checked ? `<div class="row" style="gap:8px;margin-top:var(--space-2)"><input class="input" data-in="typed" value="${h(s.typed)}" placeholder="Type the English word" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false" style="flex:1;min-height:46px;font-size:17px"><button class="btn btn-primary" style="min-height:46px;padding:0 18px" data-act="check">Check</button></div>
+        <button class="btn btn-ghost" style="align-self:flex-start;min-height:40px" data-act="giveup">I don’t know — show me</button>` : ''}
+      ${s.checked && s.typedOk ? `<div class="row" style="gap:8px;padding:10px 12px;border:1px solid var(--color-accent);background:var(--color-accent-100);color:var(--color-accent-800);font-weight:500">${ic('check', 18)}Correct</div>` : ''}
+      ${s.checked && !s.typedOk ? `<div class="row" style="gap:8px;padding:10px 12px;border:1px solid var(--color-divider);background:var(--color-neutral-200);color:var(--color-neutral-900)">${ic('x', 18)}${h(s.gaveUp ? 'Answer revealed' : 'Not quite — you typed “' + s.typed + '”')}</div>` : ''}
+    </section>`;
+  }
+  if (!isType || s.checked) out += entryHeader(cur);
+  if (s.revealed) out += entryBody(cur);
+  if (!isType && !s.revealed) out += `<div class="sticky-b">${btnP('reveal', 'SHOW ANSWER', 'width:100%;min-height:54px;font-size:18px;letter-spacing:.04em')}</div>`;
+  if (!isType && s.revealed) out += `<div class="sticky-b col" style="gap:8px"><div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3)">
+      <button class="btn btn-secondary" style="min-height:54px;font-size:16px" data-act="grade" data-v="0">${ic('x', 18)}Didn’t know</button>
+      ${btnP('grade', ic('check', 18) + 'Knew it', 'min-height:54px;font-size:16px', 'data-v="1"')}</div>
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3);font-size:11px;text-align:center" class="muted"><span>${isRetry ? 'Practice round' : '→ ' + downLbl}</span><span>${isRetry ? 'Practice round' : '→ ' + upLbl}</span></div></div>`;
+  if (isType && s.checked) out += `<div class="sticky-b col" style="gap:8px">${btnP('next', 'NEXT', 'width:100%;min-height:54px;font-size:18px;letter-spacing:.04em')}
+      ${!s.typedOk ? '<button class="btn btn-ghost" style="align-self:center;min-height:40px" data-act="override">Typo — count it as correct</button>' : ''}
+      <span style="font-size:11px;text-align:center" class="muted">${isRetry ? 'Practice round — box won’t change' : 'Moves to ' + (s.typedOk ? upLbl : downLbl)}</span></div>`;
+  return out;
+}
+
+function detailView() {
+  const w = find(S.detailId); if (!w) return '';
+  const L = w.leitner;
+  const facts = [['Box', L.learned ? '✓' : L.box], ['Next', L.learned ? '—' : rel(w)], ['Knew', L.correct_count || 0], ['Missed', L.wrong_count || 0]]
+    .map(([l, v]) => `<div class="col" style="padding:10px 8px;gap:2px"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase" class="muted">${l}</span><span style="font-family:var(--font-heading);font-weight:600;font-size:18px">${v}</span></div>`).join('');
+  const moves = [1, 2, 3, 4, 5].map(n => `<label class="seg-opt" style="padding:6px 4px;font-size:12px"><input type="radio" name="mv" data-act="move" data-n="${n}" ${(n === 5 ? L.learned : (!L.learned && L.box === n)) ? 'checked' : ''}>${n === 5 ? 'Learned' : BOXLBL[n]}</label>`).join('');
+  return `<button class="btn btn-ghost" style="align-self:flex-start;min-height:40px" data-act="back">${ic('back')}All words</button>
+    ${entryHeader(w)}${entryBody(w)}
+    <section class="col" style="gap:var(--space-3)"><h6 style="margin:0" class="muted">Leitner</h6>
+      <div class="grid-b" style="grid-template-columns:repeat(4,minmax(0,1fr))">${facts}</div>
+      <span style="font-size:12px" class="muted">Move to box</span><div class="seg">${moves}</div></section>
+    <section class="col" style="gap:var(--space-3)"><h6 style="margin:0" class="muted">Edit</h6>
+      <div class="field"><label>Persian meaning</label><input class="input fa" dir="rtl" data-in="editPersian" style="min-height:44px;font-size:15px" value="${h(S.editPersian)}" placeholder="معنی فارسی"></div>
+      <div class="field"><label>Topic tags (comma separated)</label><input class="input" data-in="editTags" style="min-height:44px" value="${h(S.editTags)}" placeholder="e.g. weather, IELTS"></div>
+      <div class="row" style="gap:var(--space-3)"><button class="btn btn-secondary" style="min-height:44px;padding:0 20px" data-act="saveedits">Save</button><span style="font-size:13px;color:var(--color-accent-800)">${h(S.savedMsg)}</span></div>
+      <details id="rawdet" style="border:1px solid var(--color-divider);padding:var(--space-3)" ${S.rawOpen ? 'open' : ''}><summary style="font-family:var(--font-heading);font-weight:600;font-size:15px">Edit full entry code</summary>
+        <div class="col" style="gap:var(--space-2);margin-top:var(--space-3)"><textarea class="input" data-in="editRaw" style="min-height:260px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;line-height:1.5" spellcheck="false">${h(S.editRaw)}</textarea>
+          <span style="font-size:12px;color:var(--color-accent-900)">${h(S.rawErr)}</span><button class="btn btn-secondary" style="min-height:44px;align-self:flex-start;padding:0 20px" data-act="saveraw">Save code</button></div></details></section>
+    <section class="row" style="gap:var(--space-3);flex-wrap:wrap;padding-top:var(--space-3);border-top:1px solid var(--color-divider)">
+      ${S.confirmDelete ? `<span style="font-size:14px">Delete “${h(w.word)}”?</span><button class="btn btn-primary" style="min-height:40px" data-act="dodelete">Delete</button><button class="btn btn-secondary" style="min-height:40px" data-act="canceldelete">Cancel</button>`
+        : '<button class="btn btn-ghost" style="min-height:44px;color:var(--color-neutral-800)" data-act="askdelete">Delete word</button>'}</section>`;
+}
+
+function tabsView() {
+  const tabs = [['home', 'Today', 'home'], ['add', 'Add', 'plus'], ['words', 'Words', 'list'], ['stats', 'Progress', 'chart']];
+  return tabs.map(([k, l, i]) => {
+    const on = S.screen === k || (k === 'words' && S.screen === 'detail');
+    return `<button class="cellbtn" data-act="tab" data-v="${k}" style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0 12px;min-height:56px;color:${on ? 'var(--color-accent-700)' : 'var(--color-neutral-700)'}">${ic(i, 22)}<span style="font-size:11px;letter-spacing:.06em;text-transform:uppercase">${l}</span></button>`;
+  }).join('');
+}
+
+/* ───────────── render ───────────── */
+function render() {
+  const ae = document.activeElement; const key = ae && ae.dataset && ae.dataset.in;
+  const sel = key && ae.selectionStart != null ? [ae.selectionStart, ae.selectionEnd] : null;
+  const m = document.getElementById('main');
+  m.innerHTML = ({ home: homeView, add: addView, words: wordsView, stats: statsView, review: reviewView, detail: detailView }[S.screen])();
+  document.getElementById('tabs').innerHTML = S.screen === 'review' ? '' : tabsView();
+  document.getElementById('tabs').style.display = S.screen === 'review' ? 'none' : 'grid';
+  document.getElementById('todayLabel').textContent = new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+  const det = document.getElementById('rawdet'); if (det) det.addEventListener('toggle', () => { S.rawOpen = det.open; });
+  if (key) { const el = m.querySelector('[data-in="' + key + '"]'); if (el && el.tagName !== 'SELECT') { el.focus(); if (sel) try { el.setSelectionRange(sel[0], sel[1]); } catch (e) {} } }
+}
+
+/* ───────────── events ───────────── */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const a = el.dataset.act, v = el.dataset.v, n = Number(el.dataset.n), id = el.dataset.id;
+  switch (a) {
+    case 'tab': v === 'add' ? go('add', { importMsg: '' }) : go(v); break;
+    case 'mode': D.mode = v; save(); render(); break;
+    case 'start': startReview(); break;
+    case 'box': go('words', { listFilter: 'b' + n, q: '' }); break;
+    case 'learned': go('words', { listFilter: 'learned', q: '' }); break;
+    case 'copy': copyPrompt(); break;
+    case 'import': doImport(); break;
+    case 'filter': S.listFilter = v; render(); break;
+    case 'open': openDetail(id); break;
+    case 'back': go('words'); break;
+    case 'speak': { const w = find(id); if (w) speak(w.word); break; }
+    case 'move': moveTo(S.detailId, n); break;
+    case 'saveedits': updateWord(S.detailId, w => { w.persian_meaning = S.editPersian.trim(); w.tags = [...new Set(S.editTags.split(',').map(x => x.trim()).filter(Boolean))]; }, 'Saved'); break;
+    case 'saveraw': saveRaw(); break;
+    case 'askdelete': S.confirmDelete = true; render(); break;
+    case 'canceldelete': S.confirmDelete = false; render(); break;
+    case 'dodelete': D.words = D.words.filter(w => w.id !== S.detailId); save(); go('words', { detailId: null }); break;
+    case 'reveal': S.session.revealed = true; render(); if (D.settings.autoSpeak) { const w = find(S.session.queue[S.session.idx]); if (w) speak(w.word); } break;
+    case 'grade': answer(v === '1'); break;
+    case 'check': checkTyped(false); break;
+    case 'giveup': checkTyped(true); break;
+    case 'next': answer(!!S.session.typedOk); break;
+    case 'override': answer(true); break;
+    case 'exit': S.session = null; go('home'); break;
+    case 'accent': D.settings.accent = v; save(); render(); break;
+    case 'toggle': D.settings[v] = !D.settings[v]; save(); render(); break;
+    case 'export': exportBackup(); break;
+    case 'restore': document.getElementById('restoreFile').click(); break;
+  }
+});
+document.addEventListener('input', e => {
+  const el = e.target; const k = el.dataset && el.dataset.in; if (!k) return;
+  if (k === 'typed') S.session.typed = el.value; else S[k] = el.value;
+  if (k === 'importText') { S.importMsg = ''; document.getElementById('impdyn').innerHTML = importDyn(); }
+  else if (k === 'q') document.getElementById('listdyn').innerHTML = listDyn();
+  else if (el.dataset.r) render();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.dataset && e.target.dataset.in === 'typed') { e.preventDefault(); checkTyped(false); } });
+document.addEventListener('change', e => { if (e.target.id === 'restoreFile' && e.target.files[0]) importBackup(e.target.files[0]); });
+
+try { speechSynthesis.getVoices(); } catch (e) {}
+render();
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>

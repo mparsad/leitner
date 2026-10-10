@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/industry-a831f05f-4eae-4bce-a842-4c09f22958b3/styles.css">
+<script src="_ds/industry-a831f05f-4eae-4bce-a842-4c09f22958b3/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500&display=swap">
+<style>
+body{margin:0;background:var(--color-bg)}
+a{color:var(--color-accent-700)}
+a:hover{color:var(--color-accent-800)}
+summary{cursor:pointer}
+</style>
+</helmet>
+<div style="max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;background:var(--color-bg);border-left:1px solid var(--color-divider);border-right:1px solid var(--color-divider)">
+  <header class="nav" style="border-bottom:1px solid var(--color-divider);position:sticky;top:0;background:var(--color-bg);z-index:5">
+    <div class="nav-brand" style="display:flex;align-items:center;gap:8px;letter-spacing:.06em"><span style="width:12px;height:12px;border:1.5px solid var(--color-accent);display:inline-block"></span>LEITNER</div>
+    <span style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700)">{{ todayLabel }}</span>
+  </header>
+
+  <main style="flex:1;padding:var(--space-6) var(--space-4) var(--space-8);display:flex;flex-direction:column;gap:var(--space-6)">
+
+    <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+      <section class="blueprint" style="padding:var(--space-6) var(--space-4) var(--space-4);display:flex;flex-direction:column;gap:var(--space-4)">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
+          <span class="card-kicker" style="color:var(--color-accent-700)">Due today</span>
+          <span style="font-size:12px;color:var(--color-neutral-700)">{{ activeCount }} in rotation</span>
+        </div>
+        <div style="font-family:var(--font-heading);font-weight:600;font-size:104px;line-height:.85;letter-spacing:-.03em">{{ dueCount }}</div>
+        <div style="font-size:14px;color:var(--color-neutral-700);text-wrap:pretty">{{ dueNote }}</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-size:12px;color:var(--color-neutral-700)">Review mode</span>
+          <div class="seg" style="display:flex">
+            <label class="seg-opt" style="flex:1;justify-content:center;min-height:40px"><input type="radio" name="mode" checked="{{ modeFlip }}" onChange="{{ setFlip }}">Flip card</label>
+            <label class="seg-opt" style="flex:1;justify-content:center;min-height:40px"><input type="radio" name="mode" checked="{{ modeType }}" onChange="{{ setType }}">Type the word</label>
+          </div>
+        </div>
+        <sc-if value="{{ hasTags }}" hint-placeholder-val="{{ false }}">
+          <div class="field">
+            <label>Topic</label>
+            <select class="input" value="{{ tagFilter }}" onChange="{{ onTagFilter }}">
+              <option value="">All topics</option>
+              <sc-for list="{{ allTags }}" as="t" hint-placeholder-count="0"><option value="{{ t }}">{{ t }}</option></sc-for>
+            </select>
+          </div>
+        </sc-if>
+        <button class="btn btn-primary blueprint" style="min-height:52px;font-size:18px;letter-spacing:.04em" disabled="{{ noDue }}" onClick="{{ startReview }}">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>START REVIEW
+        </button>
+      </section>
+
+      <section style="display:flex;flex-direction:column;gap:var(--space-3)">
+        <h6 style="margin:0;color:var(--color-neutral-700)">Boxes</h6>
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--color-divider);border-left:1px solid var(--color-divider)">
+          <sc-for list="{{ boxes }}" as="b" hint-placeholder-count="4">
+            <button onClick="{{ b.open }}" style="all:unset;box-sizing:border-box;cursor:pointer;padding:var(--space-3);border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);display:flex;flex-direction:column;gap:4px;min-height:132px" style-hover="background:color-mix(in srgb, var(--color-accent) 8%, transparent)">
+              <span style="font-size:10px;letter-spacing:.12em;color:var(--color-accent-700)">BOX 0{{ b.n }}</span>
+              <span style="font-family:var(--font-heading);font-weight:600;font-size:15px;text-transform:uppercase;line-height:1.1">{{ b.label }}</span>
+              <span style="font-family:var(--font-heading);font-weight:600;font-size:38px;line-height:1;margin-top:auto">{{ b.count }}</span>
+              <span style="font-size:11px;color:var(--color-neutral-700)">{{ b.dueText }}</span>
+            </button>
+          </sc-for>
+          <button onClick="{{ openLearned }}" style="all:unset;box-sizing:border-box;cursor:pointer;grid-column:1 / -1;padding:var(--space-3);border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);display:flex;align-items:center;justify-content:space-between;min-height:52px" style-hover="background:color-mix(in srgb, var(--color-accent) 8%, transparent)">
+            <span style="display:flex;align-items:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--color-accent-700)"><path d="M20 6 9 17l-5-5"></path></svg><span style="font-family:var(--font-heading);font-weight:600;font-size:15px;text-transform:uppercase">Learned</span></span>
+            <span style="font-family:var(--font-heading);font-weight:600;font-size:24px">{{ learnedCount }}</span>
+          </button>
+        </div>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{ isAdd }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <h2 style="margin-bottom:4px">Add words</h2>
+        <p style="margin:0;color:var(--color-neutral-700);font-size:14px;text-wrap:pretty">Paste the code Claude gives you from a Longman screenshot. Several entries at once is fine. New words go into Box 1.</p>
+      </div>
+      <div class="field">
+        <label>Entry code</label>
+        <textarea class="input" style="min-height:220px;font-family:ui-monospace,Menlo,monospace;font-size:12px;line-height:1.5" value="{{ importText }}" onChange="{{ onImportText }}" placeholder="word_entry = { &quot;word&quot;: &quot;…&quot;, … }" spellCheck="false"></textarea>
+      </div>
+      <sc-if value="{{ importError }}" hint-placeholder-val="{{ false }}">
+        <div style="font-size:13px;color:var(--color-accent-900);padding:10px 12px;border:1px solid var(--color-divider);background:var(--color-neutral-200)">{{ importErrorText }}</div>
+      </sc-if>
+      <sc-if value="{{ hasPreview }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;border-top:1px solid var(--color-divider)">
+          <sc-for list="{{ importPreview }}" as="p" hint-placeholder-count="1">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid var(--color-divider)">
+              <div style="display:flex;flex-direction:column;min-width:0">
+                <span style="font-family:var(--font-heading);font-weight:600;font-size:20px">{{ p.word }}</span>
+                <span style="font-size:12px;color:var(--color-neutral-700)">{{ p.meta }}</span>
+              </div>
+              <span class="tag tag-accent">{{ p.status }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div class="field">
+          <label>Topic tags for these words (comma separated)</label>
+          <input class="input" value="{{ importTags }}" onChange="{{ onImportTags }}" placeholder="e.g. weather, IELTS">
+        </div>
+      </sc-if>
+      <button class="btn btn-primary blueprint" style="min-height:48px;font-size:16px" disabled="{{ importDisabled }}" onClick="{{ doImport }}">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>{{ importBtnLabel }}
+      </button>
+      <sc-if value="{{ hasImportMsg }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--color-accent-800)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>{{ importMsg }}</div>
+      </sc-if>
+
+      <section class="blueprint" style="padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-3);margin-top:var(--space-4)">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <span class="card-kicker" style="color:var(--color-accent-700)">How to get the code</span>
+        <ol style="margin:0;padding-left:20px;font-size:14px;display:flex;flex-direction:column;gap:4px">
+          <li>Take a screenshot of the word on Longman.</li>
+          <li>Send it to Claude together with the prompt below.</li>
+          <li>Paste Claude’s code in the box above.</li>
+        </ol>
+        <pre ref="{{ promptRef }}" style="margin:0;padding:var(--space-3);border:1px solid var(--color-divider);background:var(--color-neutral-100);font-family:ui-monospace,Menlo,monospace;font-size:11px;line-height:1.5;white-space:pre-wrap;max-height:200px;overflow:auto">Read the Longman dictionary screenshot I attach and turn each headword into code in exactly this format. Output only the code. Copy definitions, patterns, synonyms and examples word for word. For several words, repeat word_entry = ... once per word.
+
+word_entry = {
+    "word": "",
+    "syllables": "",
+    "pronunciation": "",
+    "part_of_speech": "",
+    "source": "Longman",
+    "senses": [
+        {
+            "number": 1,
+            "pattern": None,
+            "definition": "",
+            "synonyms": [],
+            "examples": [],
+        },
+    ],
+    "derived_forms": [
+        {"word": "", "part_of_speech": "", "examples": []},
+    ],
+    "persian_meaning": "",
+    "tags": [],
+}</pre>
+        <button class="btn btn-secondary" style="min-height:44px" onClick="{{ copyPrompt }}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>{{ copyLabel }}
+        </button>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{ isWords }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:var(--space-3)">
+        <div style="position:relative">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;left:12px;top:14px;color:var(--color-neutral-700)"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+          <input class="input" style="padding-left:36px;min-height:44px;font-size:15px" value="{{ q }}" onChange="{{ onSearch }}" placeholder="Search words, meanings, tags">
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <sc-for list="{{ listFilters }}" as="f" hint-placeholder-count="7">
+            <button class="{{ f.cls }}" onClick="{{ f.pick }}" style="cursor:pointer;font-family:var(--font-body);font-size:12px;min-height:34px;padding:0 12px;border:1px solid var(--color-divider)">{{ f.label }}</button>
+          </sc-for>
+        </div>
+        <sc-if value="{{ hasTags }}" hint-placeholder-val="{{ false }}">
+          <select class="input" value="{{ listTag }}" onChange="{{ onListTag }}">
+            <option value="">All topics</option>
+            <sc-for list="{{ allTags }}" as="t" hint-placeholder-count="0"><option value="{{ t }}">{{ t }}</option></sc-for>
+          </select>
+        </sc-if>
+        <span style="font-size:12px;color:var(--color-neutral-700)">{{ listCountLabel }}</span>
+      </div>
+      <div style="display:flex;flex-direction:column;border-top:1px solid var(--color-divider)">
+        <sc-for list="{{ listItems }}" as="w" hint-placeholder-count="5">
+          <button onClick="{{ w.open }}" style="all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 4px;border-bottom:1px solid var(--color-divider)" style-hover="background:color-mix(in srgb, var(--color-accent) 6%, transparent)">
+            <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+              <div style="display:flex;align-items:baseline;gap:8px"><span style="font-family:var(--font-heading);font-weight:600;font-size:21px">{{ w.word }}</span><span style="font-size:12px;font-style:italic;color:var(--color-accent-700)">{{ w.pos }}</span></div>
+              <span style="font-size:13px;color:var(--color-neutral-700);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ w.def }}</span>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+              <span class="tag tag-accent">{{ w.boxTag }}</span>
+              <span style="font-size:11px;color:var(--color-neutral-700)">{{ w.next }}</span>
+            </div>
+          </button>
+        </sc-for>
+      </div>
+      <sc-if value="{{ listEmpty }}" hint-placeholder-val="{{ false }}">
+        <p style="text-align:center;color:var(--color-neutral-700);font-size:14px;padding:var(--space-6) 0">No words match.</p>
+      </sc-if>
+    </sc-if>
+
+    <sc-if value="{{ isStats }}" hint-placeholder-val="{{ false }}">
+      <h2 style="margin:0">Progress</h2>
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid var(--color-divider);border-left:1px solid var(--color-divider)">
+        <sc-for list="{{ statTiles }}" as="s" hint-placeholder-count="4">
+          <div style="padding:var(--space-4) var(--space-3);border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);display:flex;flex-direction:column;gap:4px">
+            <span style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-accent-700)">{{ s.label }}</span>
+            <span style="font-family:var(--font-heading);font-weight:600;font-size:40px;line-height:1">{{ s.value }}</span>
+          </div>
+        </sc-for>
+      </div>
+
+      <section style="display:flex;flex-direction:column;gap:var(--space-3)">
+        <h6 style="margin:0;color:var(--color-neutral-700)">Words by box</h6>
+        <sc-for list="{{ boxDist }}" as="r" hint-placeholder-count="5">
+          <div style="display:grid;grid-template-columns:84px minmax(0,1fr) 32px;gap:10px;align-items:center">
+            <span style="font-size:13px">{{ r.label }}</span>
+            <div style="height:14px;border:1px solid var(--color-divider);position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:{{ r.pct }}%;background:var(--color-accent)"></div></div>
+            <span style="font-family:var(--font-heading);font-weight:600;font-size:16px;text-align:right">{{ r.count }}</span>
+          </div>
+        </sc-for>
+      </section>
+
+      <section class="blueprint" style="padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-3)">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
+          <h6 style="margin:0;color:var(--color-neutral-700)">Reviews · last 14 days</h6>
+          <div style="display:flex;gap:10px;font-size:11px;color:var(--color-neutral-700)">
+            <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;background:var(--color-accent);display:inline-block"></span>Knew</span>
+            <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;background:var(--color-neutral-400);display:inline-block"></span>Missed</span>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:4px;height:120px;align-items:end;border-bottom:1px solid var(--color-divider)">
+          <sc-for list="{{ days14 }}" as="d" hint-placeholder-count="14">
+            <div style="height:100%;display:flex;flex-direction:column;justify-content:flex-end">
+              <div style="height:{{ d.wH }}%;background:var(--color-neutral-400)"></div>
+              <div style="height:{{ d.cH }}%;background:var(--color-accent)"></div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:4px">
+          <sc-for list="{{ days14 }}" as="d" hint-placeholder-count="14">
+            <span style="font-size:10px;text-align:center;color:{{ d.color }}">{{ d.label }}</span>
+          </sc-for>
+        </div>
+      </section>
+
+      <section style="display:flex;flex-direction:column;gap:var(--space-3)">
+        <h6 style="margin:0;color:var(--color-neutral-700)">Coming up</h6>
+        <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border-top:1px solid var(--color-divider);border-left:1px solid var(--color-divider)">
+          <sc-for list="{{ forecast }}" as="f" hint-placeholder-count="7">
+            <div style="padding:10px 4px;border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);display:flex;flex-direction:column;align-items:center;gap:2px">
+              <span style="font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700)">{{ f.label }}</span>
+              <span style="font-family:var(--font-heading);font-weight:600;font-size:22px">{{ f.count }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{ inSession }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;align-items:center;gap:var(--space-3)">
+        <span style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700);white-space:nowrap">{{ progressLabel }}</span>
+        <div style="flex:1;height:4px;background:var(--color-neutral-300);position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:{{ progressPct }}%;background:var(--color-accent)"></div></div>
+        <button class="btn btn-icon" style="width:40px;height:40px" onClick="{{ exitReview }}" aria-label="End review">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+        </button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ showTypePrompt }}" hint-placeholder-val="{{ false }}">
+      <section class="blueprint" style="padding:var(--space-6) var(--space-4) var(--space-4);display:flex;flex-direction:column;gap:var(--space-3)">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <span class="card-kicker" style="color:var(--color-accent-700)">Which word is it?</span>
+          <span class="tag tag-accent">{{ hv.boxLabel }}</span>
+        </div>
+        <span style="font-style:italic;color:var(--color-accent-700);font-size:15px">{{ hv.pos }}</span>
+        <sc-for list="{{ maskedSenses }}" as="s" hint-placeholder-count="2">
+          <div style="display:grid;grid-template-columns:22px minmax(0,1fr);gap:8px">
+            <span style="font-family:var(--font-heading);font-weight:600;font-size:18px;color:var(--color-accent);line-height:1.3">{{ s.num }}</span>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <span style="font-size:16px;line-height:1.45;text-wrap:pretty">{{ s.def }}</span>
+              <sc-for list="{{ s.examples }}" as="ex" hint-placeholder-count="1"><span style="font-size:14px;font-style:italic;color:var(--color-neutral-800)">› {{ ex }}</span></sc-for>
+            </div>
+          </div>
+        </sc-for>
+        <sc-if value="{{ hv.hasPersian }}" hint-placeholder-val="{{ false }}">
+          <div dir="rtl" style="font-family:Vazirmatn,sans-serif;font-size:16px;text-align:right">{{ hv.persian }}</div>
+        </sc-if>
+        <sc-if value="{{ notChecked }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;gap:8px;margin-top:var(--space-2)">
+            <input class="input" ref="{{ typeRef }}" value="{{ typed }}" onChange="{{ onTyped }}" onKeyDown="{{ onTypeKey }}" placeholder="Type the English word" autoCapitalize="off" autoComplete="off" autoCorrect="off" spellCheck="false" style="flex:1;min-height:46px;font-size:17px">
+            <button class="btn btn-primary" style="min-height:46px;padding:0 18px" onClick="{{ checkTyped }}">Check</button>
+          </div>
+          <button class="btn btn-ghost" style="align-self:flex-start;min-height:40px" onClick="{{ giveUp }}">I don’t know — show me</button>
+        </sc-if>
+        <sc-if value="{{ typedOk }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--color-accent);background:var(--color-accent-100);color:var(--color-accent-800);font-weight:500"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>Correct</div>
+        </sc-if>
+        <sc-if value="{{ typedWrong }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--color-divider);background:var(--color-neutral-200);color:var(--color-neutral-900)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>{{ wrongText }}</div>
+        </sc-if>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+      <button class="btn btn-ghost" style="align-self:flex-start;min-height:40px" onClick="{{ backToWords }}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg>All words
+      </button>
+    </sc-if>
+
+    <sc-if value="{{ showHeader }}" hint-placeholder-val="{{ false }}">
+      <section class="blueprint" style="padding:var(--space-6) var(--space-4) var(--space-4);display:flex;flex-direction:column;gap:var(--space-2)">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <span class="tag tag-accent">{{ hv.boxLabel }}</span>
+          <span style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-neutral-700)">{{ hv.source }}</span>
+        </div>
+        <h1 style="font-size:54px;margin:var(--space-6) 0 0;line-height:1;word-break:break-word">{{ hv.word }}</h1>
+        <div style="display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap">
+          <span style="font-size:15px;color:var(--color-neutral-700)">{{ hv.syllables }}</span>
+          <span style="font-size:15px">{{ hv.pronunciation }}</span>
+          <button class="btn btn-icon" style="width:44px;height:44px;color:var(--color-accent-700)" onClick="{{ hv.speak }}" aria-label="Play pronunciation">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"></path><path d="M16 9a5 5 0 0 1 0 6"></path><path d="M19.364 18.364a9 9 0 0 0 0-12.728"></path></svg>
+          </button>
+        </div>
+        <span style="font-style:italic;color:var(--color-accent-700);font-size:15px">{{ hv.pos }}</span>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{ showBody }}" hint-placeholder-val="{{ false }}">
+      <section style="display:flex;flex-direction:column;border-top:1px solid var(--color-divider)">
+        <sc-for list="{{ hv.senses }}" as="s" hint-placeholder-count="2">
+          <div style="display:grid;grid-template-columns:30px minmax(0,1fr);gap:var(--space-3);padding:var(--space-4) 0;border-bottom:1px solid var(--color-divider)">
+            <span style="font-family:var(--font-heading);font-weight:600;font-size:24px;color:var(--color-accent);line-height:1">{{ s.num }}</span>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <sc-if value="{{ s.hasPattern }}" hint-placeholder-val="{{ false }}"><span style="font-weight:700;font-size:14px">{{ s.pattern }}</span></sc-if>
+              <span style="font-size:16px;line-height:1.45;text-wrap:pretty">{{ s.definition }}</span>
+              <sc-if value="{{ s.hasSyn }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:6px;font-size:13px"><span class="tag tag-neutral" style="padding:1px 6px;font-size:10px;letter-spacing:.08em">SYN</span>{{ s.syn }}</span></sc-if>
+              <sc-for list="{{ s.examples }}" as="ex" hint-placeholder-count="1"><span style="font-size:14px;font-style:italic;color:var(--color-neutral-800)">› {{ ex }}</span></sc-for>
+            </div>
+          </div>
+        </sc-for>
+        <sc-for list="{{ hv.derived }}" as="d" hint-placeholder-count="0">
+          <div style="display:flex;flex-direction:column;gap:4px;padding:var(--space-4) 0;border-bottom:1px solid var(--color-divider)">
+            <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:11px;color:var(--color-neutral-700)">—</span><span style="font-weight:700;font-size:15px">{{ d.word }}</span><span style="font-size:13px;font-style:italic;color:var(--color-accent-700)">{{ d.pos }}</span></div>
+            <sc-for list="{{ d.examples }}" as="ex" hint-placeholder-count="1"><span style="font-size:14px;font-style:italic;color:var(--color-neutral-800);padding-left:18px">› {{ ex }}</span></sc-for>
+          </div>
+        </sc-for>
+        <sc-if value="{{ hv.hasPersian }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:var(--space-4) 0;border-bottom:1px solid var(--color-divider)">
+            <span style="font-size:10px;letter-spacing:.12em;color:var(--color-neutral-700)">FA</span>
+            <span dir="rtl" style="font-family:Vazirmatn,sans-serif;font-size:17px;text-align:right">{{ hv.persian }}</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{ hv.hasTags }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;padding:var(--space-3) 0">
+            <sc-for list="{{ hv.tags }}" as="t" hint-placeholder-count="1"><span class="tag tag-neutral">{{ t }}</span></sc-for>
+          </div>
+        </sc-if>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{ showFlipReveal }}" hint-placeholder-val="{{ false }}">
+      <div style="position:sticky;bottom:0;padding:var(--space-3) 0;background:var(--color-bg);margin-top:auto">
+        <button class="btn btn-primary blueprint" style="width:100%;min-height:54px;font-size:18px;letter-spacing:.04em" onClick="{{ reveal }}">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>SHOW ANSWER
+        </button>
+      </div>
+    </sc-if>
+    <sc-if value="{{ showFlipGrade }}" hint-placeholder-val="{{ false }}">
+      <div style="position:sticky;bottom:0;padding:var(--space-3) 0;background:var(--color-bg);display:flex;flex-direction:column;gap:8px;margin-top:auto">
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3)">
+          <button class="btn btn-secondary" style="min-height:54px;font-size:16px" onClick="{{ gradeWrong }}">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>Didn’t know
+          </button>
+          <button class="btn btn-primary blueprint" style="min-height:54px;font-size:16px" onClick="{{ gradeRight }}">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>Knew it
+          </button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3);font-size:11px;color:var(--color-neutral-700);text-align:center">
+          <span>{{ wrongHint }}</span><span>{{ rightHint }}</span>
+        </div>
+      </div>
+    </sc-if>
+    <sc-if value="{{ showTypeNext }}" hint-placeholder-val="{{ false }}">
+      <div style="position:sticky;bottom:0;padding:var(--space-3) 0;background:var(--color-bg);display:flex;flex-direction:column;gap:8px;margin-top:auto">
+        <button class="btn btn-primary blueprint" style="width:100%;min-height:54px;font-size:18px;letter-spacing:.04em" onClick="{{ nextTyped }}">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>NEXT
+        </button>
+        <sc-if value="{{ typedWrong }}" hint-placeholder-val="{{ false }}">
+          <button class="btn btn-ghost" style="align-self:center;min-height:40px" onClick="{{ overrideRight }}">Typo — count it as correct</button>
+        </sc-if>
+        <span style="font-size:11px;color:var(--color-neutral-700);text-align:center">{{ typeHint }}</span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ sessionDone }}" hint-placeholder-val="{{ false }}">
+      <section class="blueprint" style="padding:var(--space-8) var(--space-4) var(--space-4);display:flex;flex-direction:column;gap:var(--space-4)">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <span class="card-kicker" style="color:var(--color-accent-700)">Session complete</span>
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid var(--color-divider);border-left:1px solid var(--color-divider)">
+          <div style="padding:var(--space-4) var(--space-3);border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider)"><div style="font-size:10px;letter-spacing:.12em;color:var(--color-accent-700)">MOVED UP</div><div style="font-family:var(--font-heading);font-weight:600;font-size:48px;line-height:1">{{ doneRight }}</div></div>
+          <div style="padding:var(--space-4) var(--space-3);border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider)"><div style="font-size:10px;letter-spacing:.12em;color:var(--color-neutral-700)">MOVED BACK</div><div style="font-family:var(--font-heading);font-weight:600;font-size:48px;line-height:1">{{ doneWrong }}</div></div>
+        </div>
+        <span style="font-size:14px;color:var(--color-neutral-700)">{{ doneNote }}</span>
+        <button class="btn btn-primary blueprint" style="min-height:50px;font-size:16px" onClick="{{ exitReview }}">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>BACK TO TODAY
+        </button>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+      <section style="display:flex;flex-direction:column;gap:var(--space-3)">
+        <h6 style="margin:0;color:var(--color-neutral-700)">Leitner</h6>
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--color-divider);border-left:1px solid var(--color-divider)">
+          <sc-for list="{{ detailFacts }}" as="f" hint-placeholder-count="4">
+            <div style="padding:10px 8px;border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);display:flex;flex-direction:column;gap:2px">
+              <span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700)">{{ f.label }}</span>
+              <span style="font-family:var(--font-heading);font-weight:600;font-size:18px">{{ f.value }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <span style="font-size:12px;color:var(--color-neutral-700)">Move to box</span>
+        <div class="seg" style="display:flex">
+          <sc-for list="{{ moveOpts }}" as="m" hint-placeholder-count="5">
+            <label class="seg-opt" style="flex:1;justify-content:center;min-height:40px;padding:6px 4px;font-size:12px"><input type="radio" name="mv" checked="{{ m.active }}" onChange="{{ m.set }}">{{ m.label }}</label>
+          </sc-for>
+        </div>
+      </section>
+
+      <section style="display:flex;flex-direction:column;gap:var(--space-3)">
+        <h6 style="margin:0;color:var(--color-neutral-700)">Edit</h6>
+        <div class="field"><label>Persian meaning</label><input class="input" dir="rtl" style="font-family:Vazirmatn,sans-serif;min-height:44px;font-size:15px" value="{{ editPersian }}" onChange="{{ onEditPersian }}" placeholder="معنی فارسی"></div>
+        <div class="field"><label>Topic tags (comma separated)</label><input class="input" style="min-height:44px" value="{{ editTags }}" onChange="{{ onEditTags }}" placeholder="e.g. weather, IELTS"></div>
+        <div style="display:flex;align-items:center;gap:var(--space-3)">
+          <button class="btn btn-secondary" style="min-height:44px;padding:0 20px" onClick="{{ saveEdits }}">Save</button>
+          <span style="font-size:13px;color:var(--color-accent-800)">{{ savedMsg }}</span>
+        </div>
+        <details style="border:1px solid var(--color-divider);padding:var(--space-3)">
+          <summary style="font-family:var(--font-heading);font-weight:600;font-size:15px">Edit full entry code</summary>
+          <div style="display:flex;flex-direction:column;gap:var(--space-2);margin-top:var(--space-3)">
+            <textarea class="input" style="min-height:260px;font-family:ui-monospace,Menlo,monospace;font-size:11px;line-height:1.5" value="{{ editRaw }}" onChange="{{ onEditRaw }}" spellCheck="false"></textarea>
+            <span style="font-size:12px;color:var(--color-accent-900)">{{ rawErr }}</span>
+            <button class="btn btn-secondary" style="min-height:44px;align-self:flex-start;padding:0 20px" onClick="{{ saveRaw }}">Save code</button>
+          </div>
+        </details>
+      </section>
+
+      <section style="display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap;padding-top:var(--space-3);border-top:1px solid var(--color-divider)">
+        <sc-if value="{{ notConfirming }}" hint-placeholder-val="{{ true }}">
+          <button class="btn btn-ghost" style="min-height:44px;color:var(--color-neutral-800)" onClick="{{ askDelete }}">Delete word</button>
+        </sc-if>
+        <sc-if value="{{ confirmDelete }}" hint-placeholder-val="{{ false }}">
+          <span style="font-size:14px">Delete “{{ hv.word }}”?</span>
+          <button class="btn btn-primary" style="min-height:40px" onClick="{{ doDelete }}">Delete</button>
+          <button class="btn btn-secondary" style="min-height:40px" onClick="{{ cancelDelete }}">Cancel</button>
+        </sc-if>
+      </section>
+    </sc-if>
+  </main>
+
+  <sc-if value="{{ showTabs }}" hint-placeholder-val="{{ true }}">
+    <nav style="position:sticky;bottom:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--color-divider);background:var(--color-bg);z-index:5">
+      <button onClick="{{ goHome }}" style="all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0 12px;min-height:56px;box-sizing:border-box;color:{{ tabHome }}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+        <span style="font-size:11px;letter-spacing:.06em;text-transform:uppercase">Today</span>
+      </button>
+      <button onClick="{{ goAdd }}" style="all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0 12px;min-height:56px;box-sizing:border-box;color:{{ tabAdd }}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+        <span style="font-size:11px;letter-spacing:.06em;text-transform:uppercase">Add</span>
+      </button>
+      <button onClick="{{ goWords }}" style="all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0 12px;min-height:56px;box-sizing:border-box;color:{{ tabWords }}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h.01"></path><path d="M3 18h.01"></path><path d="M3 6h.01"></path><path d="M8 12h13"></path><path d="M8 18h13"></path><path d="M8 6h13"></path></svg>
+        <span style="font-size:11px;letter-spacing:.06em;text-transform:uppercase">Words</span>
+      </button>
+      <button onClick="{{ goStats }}" style="all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0 12px;min-height:56px;box-sizing:border-box;color:{{ tabStats }}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg>
+        <span style="font-size:11px;letter-spacing:.06em;text-transform:uppercase">Progress</span>
+      </button>
+    </nav>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;accent&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;en-GB&quot;,&quot;en-US&quot;],&quot;default&quot;:&quot;en-GB&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Pronunciation&quot;},&quot;autoSpeak&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Pronunciation&quot;},&quot;requeueWrong&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Review&quot;}}">
+const KEY = 'leitner.v1';
+const IV = { 1: 1, 2: 3, 3: 7, 4: 30 };
+const BOXLBL = { 1: '1 day', 2: '3 days', 3: '1 week', 4: '1 month' };
+const fmt = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+const today = () => fmt(new Date());
+const toDate = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const addDays = (s, n) => { const d = toDate(s); d.setDate(d.getDate() + n); return fmt(d); };
+const diffDays = (a, b) => Math.round((toDate(b) - toDate(a)) / 86400000);
+const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+function pyToJson(src) {
+  let out = '', i = 0; const n = src.length;
+  while (i < n) {
+    const c = src[i];
+    if (c === '"' || c === "'" || c === '\u201c' || c === '\u201d') {
+      const q = (c === '\u201c' || c === '\u201d') ? null : c; let s = ''; i++;
+      while (i < n && (q ? src[i] !== q : (src[i] !== '\u201d' && src[i] !== '\u201c'))) {
+        if (src[i] === '\\' && i + 1 < n) { const e = src[i + 1]; s += e === 'n' ? '\n' : e === 't' ? '\t' : e; i += 2; continue; }
+        s += src[i]; i++;
+      }
+      i++; out += JSON.stringify(s); continue;
+    }
+    if (c === '#' || (c === '/' && src[i + 1] === '/')) { while (i < n && src[i] !== '\n') i++; continue; }
+    if (/[A-Za-z_]/.test(c)) {
+      let j = i; while (j < n && /\w/.test(src[j])) j++;
+      const w = src.slice(i, j); let k = j; while (k < n && /[ \t]/.test(src[k])) k++;
+      i = j;
+      if (src[k] === '=' && src[k + 1] !== '=') { i = k + 1; out += ' '; continue; }
+      if (w === 'None' || w === 'null' || w === 'undefined') out += 'null';
+      else if (w === 'True' || w === 'true') out += 'true';
+      else if (w === 'False' || w === 'false') out += 'false';
+      else if (src[k] === ':') out += JSON.stringify(w);
+      else out += w;
+      continue;
+    }
+    if (c === '}' || c === ']') { out = out.replace(/,\s*$/, ''); out += c; i++; continue; }
+    if (c === ';') { i++; continue; }
+    out += c; i++;
+  }
+  return out;
+}
+function parseEntries(src) {
+  const js = pyToJson(src);
+  const chunks = []; let depth = 0, start = -1, inStr = false;
+  for (let i = 0; i < js.length; i++) {
+    const c = js[i];
+    if (inStr) { if (c === '\\') { i++; continue; } if (c === '"') inStr = false; continue; }
+    if (c === '"') { inStr = true; continue; }
+    if (c === '{' || c === '[') { if (depth === 0) start = i; depth++; }
+    else if (c === '}' || c === ']') { depth--; if (depth === 0) chunks.push(js.slice(start, i + 1)); }
+  }
+  if (depth !== 0) throw new Error('The code looks cut off — a bracket is not closed.');
+  const items = [];
+  chunks.forEach(ch => { const v = JSON.parse(ch); Array.isArray(v) ? items.push(...v) : items.push(v); });
+  const ok = items.filter(x => x && typeof x === 'object' && x.word);
+  if (!ok.length) throw new Error('No entry with a "word" field was found.');
+  return ok;
+}
+const arr = v => Array.isArray(v) ? v.filter(x => x != null && x !== '').map(String) : (v ? [String(v)] : []);
+function normContent(e) {
+  return {
+    word: String(e.word).trim(), syllables: e.syllables || '', pronunciation: e.pronunciation || '',
+    part_of_speech: e.part_of_speech || '', source: e.source || 'Longman',
+    senses: (e.senses || []).map((s, i) => ({ number: s.number ?? i + 1, pattern: s.pattern || '', definition: s.definition || '', synonyms: arr(s.synonyms), examples: arr(s.examples) })),
+    derived_forms: (e.derived_forms || []).map(d => ({ word: d.word || '', part_of_speech: d.part_of_speech || '', examples: arr(d.examples) })),
+    persian_meaning: e.persian_meaning || '', tags: arr(e.tags).map(t => t.trim()).filter(Boolean)
+  };
+}
+function seedData() {
+  const t = today();
+  const mk = (word, syl, pron, pos, senses, box, off, tags, x = {}) => ({
+    id: 'seed-' + word, word, syllables: syl, pronunciation: pron, part_of_speech: pos, source: 'Longman',
+    senses: senses.map((s, i) => ({ number: i + 1, pattern: s[2] || '', definition: s[0], synonyms: s[3] || [], examples: s[1] || [] })),
+    derived_forms: x.derived || [], persian_meaning: x.fa || '', tags,
+    leitner: { box, added_date: addDays(t, -12), next_review: addDays(t, off), correct_count: box - 1 + (x.learned ? 1 : 0), wrong_count: x.wrong || 0, learned: !!x.learned }
+  });
+  const words = [
+    { id: 'seed-blistering', word: 'blistering', syllables: 'blis·ter·ing', pronunciation: '/ˈblɪstərɪŋ/', part_of_speech: 'adjective', source: 'Longman',
+      senses: [
+        { number: 1, pattern: '', definition: 'extremely hot', synonyms: ['blazing'], examples: ['the blistering heat of the desert'] },
+        { number: 2, pattern: 'blistering attack/criticism etc', definition: 'very critical remarks expressing anger and disapproval', synonyms: [], examples: ['a blistering attack on her boss'] },
+        { number: 3, pattern: '', definition: 'used to describe actions in sport that are very fast or forceful', synonyms: [], examples: ['Hamilton set a blistering pace.'] }],
+      derived_forms: [{ word: 'blisteringly', part_of_speech: 'adverb', examples: ['a blisteringly hot day'] }],
+      persian_meaning: '', tags: ['weather'],
+      leitner: { box: 1, added_date: addDays(t, -1), next_review: t, correct_count: 0, wrong_count: 0, learned: false } },
+    mk('meticulous', 'me·tic·u·lous', '/məˈtɪkjələs/', 'adjective', [['very careful about small details, making sure everything is done correctly', ['She keeps meticulous records of what she spends.']]], 2, 0, ['work']),
+    mk('reluctant', 're·luc·tant', '/rɪˈlʌktənt/', 'adjective', [['slow and unwilling to do something', ['He was reluctant to admit his mistake.'], 'reluctant to do something']], 1, 0, [], { fa: 'بی‌میل، بااکراه', wrong: 1, derived: [{ word: 'reluctantly', part_of_speech: 'adverb', examples: ['She reluctantly agreed.'] }] }),
+    mk('ubiquitous', 'u·biq·ui·tous', '/juːˈbɪkwɪtəs/', 'adjective', [['seeming to be everywhere', ['Phones have become ubiquitous.']]], 3, 4, ['academic']),
+    mk('endeavour', 'en·deav·our', '/ɪnˈdevə/', 'noun', [['an attempt to do something new or difficult', ['a lifelong endeavour to understand nature']]], 4, 19, ['academic']),
+    mk('resilient', 're·sil·ient', '/rɪˈzɪliənt/', 'adjective', [['able to recover quickly after a difficult situation', ['Children are often surprisingly resilient.']]], 4, 30, ['work'], { learned: true })
+  ];
+  const log = {};
+  [[5, 2], [3, 1], [0, 0], [6, 1], [4, 3], [7, 1]].forEach((v, i) => { if (v[0] + v[1]) log[addDays(t, -6 + i)] = { c: v[0], w: v[1] }; });
+  return { words, log, mode: 'flip' };
+}
+
+class Component extends DCLogic {
+  promptRef = React.createRef();
+  typeRef = React.createRef();
+  state = this.init();
+
+  init() {
+    let data = null;
+    try { data = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+    if (!data || !Array.isArray(data.words)) data = seedData();
+    data.log = data.log || {};
+    return { data, screen: 'home', tagFilter: '', session: null, detailId: null, q: '', listFilter: 'all', listTag: '',
+      importText: '', importTags: '', importMsg: '', copied: false,
+      editPersian: '', editTags: '', editRaw: '', rawErr: '', savedMsg: '', confirmDelete: false };
+  }
+  save(data) { try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) {} this.setState({ data }); }
+  clone() { return JSON.parse(JSON.stringify(this.state.data)); }
+  find(id) { return this.state.data.words.find(w => w.id === id); }
+
+  speak(text) {
+    try {
+      const u = new SpeechSynthesisUtterance(text); u.lang = this.props.accent ?? 'en-GB'; u.rate = 0.9;
+      const v = speechSynthesis.getVoices().find(v => v.lang === u.lang || v.lang.replace('_', '-') === u.lang); if (v) u.voice = v;
+      speechSynthesis.cancel(); speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+
+  go(screen, extra = {}) { this.setState({ screen, confirmDelete: false, ...extra }); try { window.scrollTo(0, 0); } catch (e) {} }
+
+  setMode(mode) { const data = this.clone(); data.mode = mode; this.save(data); }
+
+  startReview(ids) {
+    const s = { queue: ids, idx: 0, revealed: false, checked: false, typed: '', typedOk: null, retry: {}, correct: 0, wrong: 0, done: false };
+    this.go('review', { session: s });
+    setTimeout(() => this.onCardShown(), 60);
+  }
+  onCardShown() {
+    const s = this.state.session; if (!s || s.done) return;
+    const w = this.find(s.queue[s.idx]); if (!w) return;
+    if (this.state.data.mode === 'type') { this.typeRef.current && this.typeRef.current.focus(); }
+    else if (this.props.autoSpeak) this.speak(w.word);
+  }
+  applyGrade(data, id, ok) {
+    const t = today(); const w = data.words.find(x => x.id === id); if (!w) return;
+    const L = w.leitner; let box = L.box;
+    if (ok) { L.correct_count++; if (box >= 4) { L.learned = true; L.learned_date = t; } else box++; }
+    else { L.wrong_count++; box = Math.max(1, box - 1); }
+    L.box = box; L.next_review = addDays(t, IV[box]); L.last_review = t;
+    const lg = data.log[t] || { c: 0, w: 0 }; ok ? lg.c++ : lg.w++; data.log[t] = lg;
+  }
+  answer(ok) {
+    const prev = this.state.session;
+    const s = { ...prev, queue: [...prev.queue], retry: { ...prev.retry } };
+    const id = s.queue[s.idx]; const isRetry = !!s.retry[s.idx];
+    if (!isRetry) { const data = this.clone(); this.applyGrade(data, id, ok); this.save(data); ok ? s.correct++ : s.wrong++; }
+    if (!ok && (this.props.requeueWrong ?? true) && !isRetry) { s.queue.push(id); s.retry[s.queue.length - 1] = true; }
+    Object.assign(s, { idx: s.idx + 1, revealed: false, checked: false, typed: '', typedOk: null });
+    if (s.idx >= s.queue.length) s.done = true;
+    this.setState({ session: s }, () => { try { window.scrollTo(0, 0); } catch (e) {} setTimeout(() => this.onCardShown(), 30); });
+  }
+  checkTyped(giveUp) {
+    const s = this.state.session; const w = this.find(s.queue[s.idx]);
+    const norm = x => x.toLowerCase().trim().replace(/^to\s+/, '').replace(/\s+/g, ' ');
+    const ok = !giveUp && norm(s.typed) === norm(w.word);
+    if (!giveUp && !s.typed.trim()) return;
+    this.setState({ session: { ...s, checked: true, revealed: true, typedOk: ok, gaveUp: !!giveUp } });
+    if (this.props.autoSpeak) this.speak(w.word);
+  }
+
+  importParse() {
+    const txt = this.state.importText;
+    if (this._ic && this._ic.txt === txt) return this._ic;
+    let r = { txt, items: [], error: '' };
+    if (txt.trim()) { try { r.items = parseEntries(txt).map(normContent); } catch (e) { r.error = 'Could not read this code: ' + (e.message || e); } }
+    this._ic = r; return r;
+  }
+  doImport() {
+    const { items } = this.importParse(); if (!items.length) return;
+    const extra = this.state.importTags.split(',').map(x => x.trim()).filter(Boolean);
+    const data = this.clone(); const t = today(); let added = 0, updated = 0;
+    const raw = (() => { try { return parseEntries(this.state.importText); } catch (e) { return []; } })();
+    items.forEach((c, i) => {
+      c.tags = [...new Set([...c.tags, ...extra])];
+      const ex = data.words.find(w => w.word.toLowerCase() === c.word.toLowerCase());
+      if (ex) { const tags = [...new Set([...ex.tags, ...c.tags])]; Object.assign(ex, c, { tags, persian_meaning: c.persian_meaning || ex.persian_meaning }); updated++; }
+      else {
+        const rb = raw[i] && raw[i].leitner && Number(raw[i].leitner.box);
+        const box = rb >= 1 && rb <= 4 ? rb : 1;
+        data.words.push({ id: 'w' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), ...c,
+          leitner: { box, added_date: t, next_review: addDays(t, IV[box]), correct_count: 0, wrong_count: 0, learned: false } });
+        added++;
+      }
+    });
+    this.save(data);
+    const parts = []; if (added) parts.push(added + ' added to Box 1'); if (updated) parts.push(updated + ' updated (progress kept)');
+    this.setState({ importText: '', importTags: '', importMsg: parts.join(' · ') + '. First review: tomorrow.' });
+  }
+  copyPrompt() {
+    const txt = this.promptRef.current ? this.promptRef.current.textContent : '';
+    const done = () => { this.setState({ copied: true }); setTimeout(() => this.setState({ copied: false }), 1800); };
+    const fallback = () => { const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) {} ta.remove(); done(); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, fallback); else fallback();
+  }
+
+  openDetail(id) {
+    const w = this.find(id); if (!w) return;
+    const { id: _, ...rest } = w;
+    this.go('detail', { detailId: id, editPersian: w.persian_meaning, editTags: w.tags.join(', '), editRaw: JSON.stringify(rest, null, 2), rawErr: '', savedMsg: '' });
+  }
+  updateWord(id, fn, msg) {
+    const data = this.clone(); const w = data.words.find(x => x.id === id); if (!w) return;
+    fn(w); this.save(data);
+    const { id: _, ...rest } = w;
+    this.setState({ editRaw: JSON.stringify(rest, null, 2), savedMsg: msg || '' });
+    if (msg) setTimeout(() => this.setState({ savedMsg: '' }), 1800);
+  }
+  moveTo(id, n) {
+    this.updateWord(id, w => {
+      const t = today();
+      if (n === 5) { w.leitner.learned = true; w.leitner.learned_date = t; w.leitner.box = 4; }
+      else { w.leitner.learned = false; w.leitner.box = n; w.leitner.next_review = addDays(t, IV[n]); }
+    });
+  }
+  saveRaw() {
+    const id = this.state.detailId; const old = this.find(id);
+    try {
+      const e = parseEntries(this.state.editRaw)[0]; const c = normContent(e);
+      const L = Object.assign({}, old.leitner, e.leitner || {});
+      L.box = Math.min(4, Math.max(1, Number(L.box) || 1));
+      this.updateWord(id, w => { Object.assign(w, c, { leitner: L }); }, 'Saved');
+      this.setState({ rawErr: '', editPersian: c.persian_meaning, editTags: c.tags.join(', ') });
+    } catch (err) { this.setState({ rawErr: 'Could not read this code: ' + (err.message || err) }); }
+  }
+
+  entryView(w) {
+    if (!w) return { senses: [], derived: [], tags: [] };
+    const L = w.leitner;
+    return {
+      word: w.word, syllables: w.syllables, pronunciation: w.pronunciation, pos: w.part_of_speech, source: w.source || '',
+      boxLabel: L.learned ? 'Learned' : 'Box ' + L.box + ' · ' + BOXLBL[L.box],
+      speak: () => this.speak(w.word),
+      senses: w.senses.map(s => ({ num: s.number, pattern: s.pattern, hasPattern: !!s.pattern, definition: s.definition, syn: s.synonyms.join(', '), hasSyn: s.synonyms.length > 0, examples: s.examples })),
+      derived: w.derived_forms.filter(d => d.word).map(d => ({ word: d.word, pos: d.part_of_speech, examples: d.examples })),
+      persian: w.persian_meaning, hasPersian: !!w.persian_meaning, tags: w.tags, hasTags: w.tags.length > 0
+    };
+  }
+  rel(w) {
+    if (w.leitner.learned) return 'Done';
+    const d = diffDays(today(), w.leitner.next_review);
+    return d <= 0 ? 'Due now' : d === 1 ? 'Tomorrow' : 'In ' + d + ' days';
+  }
+
+  renderVals() {
+    const st = this.state, data = st.data, words = data.words, t = today(), mode = data.mode || 'flip';
+    const active = words.filter(w => !w.leitner.learned);
+    const learned = words.filter(w => w.leitner.learned);
+    const isDue = w => !w.leitner.learned && w.leitner.next_review <= t;
+    const allTags = [...new Set(words.flatMap(w => w.tags))].sort();
+    const tagFilter = allTags.includes(st.tagFilter) ? st.tagFilter : '';
+    const due = active.filter(isDue).filter(w => !tagFilter || w.tags.includes(tagFilter))
+      .sort((a, b) => a.leitner.box - b.leitner.box || a.leitner.next_review.localeCompare(b.leitner.next_review));
+
+    let dueNote;
+    if (!words.length) dueNote = 'No words yet. Add your first Longman entry.';
+    else if (due.length) dueNote = 'Knew it moves a word up one box. Didn’t know moves it back one.';
+    else {
+      const up = active.filter(w => !tagFilter || w.tags.includes(tagFilter)).map(w => w.leitner.next_review).sort()[0];
+      if (!up) dueNote = 'All caught up — nothing left in rotation.';
+      else { const n = active.filter(w => w.leitner.next_review === up).length; const dd = diffDays(t, up); dueNote = 'All caught up. Next: ' + (dd === 1 ? 'tomorrow' : 'in ' + dd + ' days') + ' · ' + n + (n === 1 ? ' word' : ' words') + '.'; }
+    }
+
+    const boxes = [1, 2, 3, 4].map(n => {
+      const inb = active.filter(w => w.leitner.box === n); const dn = inb.filter(isDue).length;
+      return { n, label: BOXLBL[n], count: inb.length, dueText: dn ? dn + ' due' : 'none due', open: () => this.go('words', { listFilter: 'b' + n, q: '' }) };
+    });
+
+    // import
+    const ip = st.screen === 'add' ? this.importParse() : { items: [], error: '' };
+    const existing = new Set(words.map(w => w.word.toLowerCase()));
+    const importPreview = ip.items.map(c => ({ word: c.word, meta: [c.part_of_speech, c.senses.length + (c.senses.length === 1 ? ' sense' : ' senses'), c.derived_forms.length ? c.derived_forms.length + ' derived' : ''].filter(Boolean).join(' · '), status: existing.has(c.word.toLowerCase()) ? 'Update' : 'New' }));
+
+    // list
+    const q = st.q.trim().toLowerCase();
+    const fdefs = [['all', 'All'], ['due', 'Due'], ['b1', '1 day'], ['b2', '3 days'], ['b3', '1 week'], ['b4', '1 month'], ['learned', 'Learned']];
+    const listFilters = fdefs.map(([k, l]) => ({ label: l, cls: st.listFilter === k ? 'tag tag-accent' : 'tag', pick: () => this.setState({ listFilter: k }) }));
+    const listTag = allTags.includes(st.listTag) ? st.listTag : '';
+    const lf = st.listFilter;
+    const list = words.filter(w => {
+      if (lf === 'due' && !isDue(w)) return false;
+      if (lf === 'learned' && !w.leitner.learned) return false;
+      if (lf[0] === 'b' && (w.leitner.learned || w.leitner.box !== Number(lf[1]))) return false;
+      if (listTag && !w.tags.includes(listTag)) return false;
+      if (q) { const hay = [w.word, w.persian_meaning, ...w.tags, ...w.senses.map(s => s.definition), ...w.derived_forms.map(d => d.word)].join(' ').toLowerCase(); if (!hay.includes(q)) return false; }
+      return true;
+    }).sort((a, b) => a.word.localeCompare(b.word));
+    const listItems = list.map(w => ({ word: w.word, pos: w.part_of_speech, def: (w.senses[0] && w.senses[0].definition) || w.persian_meaning, boxTag: w.leitner.learned ? 'Learned' : 'Box ' + w.leitner.box, next: this.rel(w), open: () => this.openDetail(w.id) }));
+
+    // stats
+    let tc = 0, tw = 0; words.forEach(w => { tc += w.leitner.correct_count || 0; tw += w.leitner.wrong_count || 0; });
+    const lt = data.log[t] || { c: 0, w: 0 };
+    const statTiles = [
+      { label: 'Words', value: words.length },
+      { label: 'Learned', value: learned.length },
+      { label: 'Accuracy', value: tc + tw ? Math.round(tc / (tc + tw) * 100) + '%' : '—' },
+      { label: 'Reviewed today', value: lt.c + lt.w }
+    ];
+    const tot = Math.max(1, words.length);
+    const boxDist = [1, 2, 3, 4].map(n => { const c = active.filter(w => w.leitner.box === n).length; return { label: BOXLBL[n], count: c, pct: Math.round(c / tot * 100) }; });
+    boxDist.push({ label: 'Learned', count: learned.length, pct: Math.round(learned.length / tot * 100) });
+    const d14 = []; for (let i = 13; i >= 0; i--) { const ds = addDays(t, -i); d14.push({ ds, lg: data.log[ds] || { c: 0, w: 0 } }); }
+    const mx = Math.max(1, ...d14.map(x => x.lg.c + x.lg.w));
+    const days14 = d14.map(x => ({ cH: x.lg.c / mx * 100, wH: x.lg.w / mx * 100, label: String(toDate(x.ds).getDate()), color: x.ds === t ? 'var(--color-accent-700)' : 'var(--color-neutral-700)' }));
+    const forecast = []; for (let i = 0; i < 7; i++) { const ds = addDays(t, i); forecast.push({ label: i === 0 ? 'Today' : toDate(ds).toLocaleDateString('en-GB', { weekday: 'short' }), count: active.filter(w => i === 0 ? w.leitner.next_review <= t : w.leitner.next_review === ds).length }); }
+
+    // review / detail
+    const s = st.session; const inReview = st.screen === 'review' && !!s;
+    const cur = inReview && !s.done ? this.find(s.queue[s.idx]) : null;
+    const detail = st.screen === 'detail' ? this.find(st.detailId) : null;
+    const hw = cur || detail;
+    const hv = this.entryView(hw);
+    const isType = mode === 'type';
+    const mask = str => cur ? str.replace(new RegExp(esc(cur.word.slice(0, Math.max(3, cur.word.length - 2))) + '\\w*', 'gi'), '_____') : str;
+    const maskedSenses = cur ? cur.senses.map(x => ({ num: x.number, def: mask(x.definition), examples: x.examples.map(mask) })) : [];
+    const L = cur ? cur.leitner : null;
+    const upLbl = L ? (L.box >= 4 ? 'Learned ✓' : 'Box ' + (L.box + 1) + ' · ' + BOXLBL[L.box + 1]) : '';
+    const downB = L ? Math.max(1, L.box - 1) : 1;
+    const downLbl = 'Box ' + downB + ' · ' + BOXLBL[downB];
+    const isRetry = s && s.retry[s.idx];
+
+    const tabC = k => (st.screen === k || (k === 'words' && st.screen === 'detail')) ? 'var(--color-accent-700)' : 'var(--color-neutral-700)';
+    const dl = detail ? detail.leitner : null;
+
+    return {
+      todayLabel: new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }),
+      isHome: st.screen === 'home', isAdd: st.screen === 'add', isWords: st.screen === 'words', isStats: st.screen === 'stats', isDetail: !!detail,
+      showTabs: st.screen !== 'review',
+      tabHome: tabC('home'), tabAdd: tabC('add'), tabWords: tabC('words'), tabStats: tabC('stats'),
+      goHome: () => this.go('home'), goAdd: () => this.go('add', { importMsg: '' }), goWords: () => this.go('words'), goStats: () => this.go('stats'),
+
+      activeCount: active.length, dueCount: due.length, dueNote, noDue: due.length === 0, learnedCount: learned.length,
+      modeFlip: mode === 'flip', modeType: isType, setFlip: () => this.setMode('flip'), setType: () => this.setMode('type'),
+      hasTags: allTags.length > 0, allTags, tagFilter, onTagFilter: e => this.setState({ tagFilter: e.target.value }),
+      startReview: () => this.startReview(due.map(w => w.id)),
+      boxes, openLearned: () => this.go('words', { listFilter: 'learned', q: '' }),
+
+      importText: st.importText, onImportText: e => this.setState({ importText: e.target.value, importMsg: '' }),
+      importError: !!ip.error, importErrorText: ip.error, hasPreview: ip.items.length > 0, importPreview,
+      importTags: st.importTags, onImportTags: e => this.setState({ importTags: e.target.value }),
+      importDisabled: ip.items.length === 0, importBtnLabel: ip.items.length > 1 ? 'IMPORT ' + ip.items.length + ' WORDS' : 'IMPORT WORD',
+      doImport: () => this.doImport(), hasImportMsg: !!st.importMsg, importMsg: st.importMsg,
+      promptRef: this.promptRef, copyPrompt: () => this.copyPrompt(), copyLabel: st.copied ? 'Copied' : 'Copy prompt for Claude',
+
+      q: st.q, onSearch: e => this.setState({ q: e.target.value }), listFilters, listTag, onListTag: e => this.setState({ listTag: e.target.value }),
+      listItems, listEmpty: listItems.length === 0, listCountLabel: listItems.length + (listItems.length === 1 ? ' word' : ' words'),
+
+      statTiles, boxDist, days14, forecast,
+
+      inSession: inReview && !s.done, sessionDone: inReview && s.done,
+      progressLabel: s ? Math.min(s.idx + 1, s.queue.length) + ' / ' + s.queue.length + (isRetry ? ' · again' : '') : '',
+      progressPct: s ? Math.round(s.idx / Math.max(1, s.queue.length) * 100) : 0,
+      exitReview: () => this.go('home', { session: null }),
+      hv, maskedSenses,
+      showHeader: !!detail || (!!cur && (!isType || s.checked)),
+      showBody: !!detail || (!!cur && s.revealed),
+      showTypePrompt: !!cur && isType,
+      notChecked: !!cur && !s.checked, typedOk: !!cur && s.checked && s.typedOk, typedWrong: !!cur && s.checked && !s.typedOk,
+      wrongText: s && s.gaveUp ? 'Answer revealed' : 'Not quite — you typed “' + (s ? s.typed : '') + '”',
+      typed: s ? s.typed : '', onTyped: e => this.setState({ session: { ...this.state.session, typed: e.target.value } }),
+      onTypeKey: e => { if (e.key === 'Enter') this.checkTyped(false); },
+      checkTyped: () => this.checkTyped(false), giveUp: () => this.checkTyped(true),
+      showFlipReveal: !!cur && !isType && !s.revealed, showFlipGrade: !!cur && !isType && s.revealed,
+      showTypeNext: !!cur && isType && s.checked,
+      reveal: () => { this.setState({ session: { ...s, revealed: true } }); },
+      gradeRight: () => this.answer(true), gradeWrong: () => this.answer(false),
+      nextTyped: () => this.answer(!!s.typedOk), overrideRight: () => this.answer(true),
+      rightHint: isRetry ? 'Practice round' : '→ ' + upLbl, wrongHint: isRetry ? 'Practice round' : '→ ' + downLbl,
+      typeHint: isRetry ? 'Practice round — box won’t change' : (s && s.typedOk ? 'Moves to ' + upLbl : 'Moves to ' + downLbl),
+      doneRight: s ? s.correct : 0, doneWrong: s ? s.wrong : 0,
+      doneNote: due.length ? due.length + ' still due today.' : 'Nothing else due today.',
+
+      backToWords: () => this.go('words'),
+      detailFacts: dl ? [
+        { label: 'Box', value: dl.learned ? '✓' : dl.box },
+        { label: 'Next', value: dl.learned ? '—' : this.rel(detail) },
+        { label: 'Knew', value: dl.correct_count || 0 },
+        { label: 'Missed', value: dl.wrong_count || 0 }] : [],
+      moveOpts: dl ? [1, 2, 3, 4, 5].map(n => ({ label: n === 5 ? 'Learned' : BOXLBL[n], active: n === 5 ? !!dl.learned : (!dl.learned && dl.box === n), set: () => this.moveTo(detail.id, n) })) : [],
+      editPersian: st.editPersian, onEditPersian: e => this.setState({ editPersian: e.target.value }),
+      editTags: st.editTags, onEditTags: e => this.setState({ editTags: e.target.value }),
+      saveEdits: () => this.updateWord(st.detailId, w => { w.persian_meaning = st.editPersian.trim(); w.tags = [...new Set(st.editTags.split(',').map(x => x.trim()).filter(Boolean))]; }, 'Saved'),
+      savedMsg: st.savedMsg, editRaw: st.editRaw, onEditRaw: e => this.setState({ editRaw: e.target.value }), rawErr: st.rawErr, saveRaw: () => this.saveRaw(),
+      notConfirming: !st.confirmDelete, confirmDelete: st.confirmDelete,
+      askDelete: () => this.setState({ confirmDelete: true }), cancelDelete: () => this.setState({ confirmDelete: false }),
+      doDelete: () => { const data = this.clone(); data.words = data.words.filter(w => w.id !== st.detailId); this.save(data); this.go('words', { detailId: null }); }
+    };
+  }
+}
+</script>
+</body>
+</html>
