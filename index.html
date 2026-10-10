@@ -101,6 +101,12 @@ const diffDays = (a, b) => Math.round((toDate(b) - toDate(a)) / 86400000);
 const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const h = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
+const CATS = [['academic', 'Academic texts', 'Academic'], ['textbook', 'English textbook', 'Textbook'], ['general', 'General use', 'General']];
+const catOf = w => (CATS.find(c => c[0] === w.category) || CATS[2])[0];
+const catLabel = k => (CATS.find(c => c[0] === k) || CATS[2])[1];
+const catShort = k => (CATS.find(c => c[0] === k) || CATS[2])[2];
+const normCat = v => { const x = String(v || '').toLowerCase(); const c = CATS.find(c => c[0] === x || c[1].toLowerCase() === x || c[2].toLowerCase() === x); return c ? c[0] : ''; };
+
 const PROMPT = `Read the Longman dictionary screenshot I attach and turn each headword into code in exactly this format. Output only the code. Copy definitions, patterns, synonyms and examples word for word. For several words, repeat word_entry = ... once per word.
 
 word_entry = {
@@ -181,7 +187,8 @@ function normContent(e) {
     part_of_speech: e.part_of_speech || '', source: e.source || 'Longman',
     senses: (e.senses || []).map((s, i) => ({ number: s.number ?? i + 1, pattern: s.pattern || '', definition: s.definition || '', synonyms: arr(s.synonyms), examples: arr(s.examples) })),
     derived_forms: (e.derived_forms || []).map(d => ({ word: d.word || '', part_of_speech: d.part_of_speech || '', examples: arr(d.examples) })),
-    persian_meaning: e.persian_meaning || '', tags: arr(e.tags).map(t => t.trim()).filter(Boolean)
+    persian_meaning: e.persian_meaning || '', tags: arr(e.tags).map(t => t.trim()).filter(Boolean),
+    category: normCat(e.category)
   };
 }
 
@@ -195,7 +202,7 @@ function loadData() {
   return d;
 }
 let D = loadData();
-const S = { screen: 'home', tagFilter: '', session: null, detailId: null, q: '', listFilter: 'all', listTag: '',
+const S = { screen: 'home', tagFilter: '', catFilter: '', listCat: '', importCat: 'general', session: null, detailId: null, q: '', listFilter: 'all', listTag: '',
   importText: '', importTags: '', importMsg: '', copied: false,
   editPersian: '', editTags: '', editRaw: '', rawErr: '', rawOpen: false, savedMsg: '', confirmDelete: false, backupMsg: '' };
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (e) {} };
@@ -233,7 +240,7 @@ function go(screen, extra) {
 const isDue = w => !w.leitner.learned && w.leitner.next_review <= today();
 function dueList() {
   const tag = S.tagFilter;
-  return D.words.filter(w => isDue(w) && (!tag || w.tags.includes(tag)))
+  return D.words.filter(w => isDue(w) && (!tag || w.tags.includes(tag)) && (!S.catFilter || catOf(w) === S.catFilter))
     .sort((a, b) => a.leitner.box - b.leitner.box || a.leitner.next_review.localeCompare(b.leitner.next_review));
 }
 const allTags = () => [...new Set(D.words.flatMap(w => w.tags))].sort();
@@ -287,7 +294,7 @@ function doImport() {
   const extra = S.importTags.split(',').map(x => x.trim()).filter(Boolean);
   const t = today(); let added = 0, updated = 0;
   items.forEach((c, i) => {
-    c.tags = [...new Set([...c.tags, ...extra])];
+    c.tags = [...new Set([...c.tags, ...extra])]; c.category = c.category || S.importCat;
     const ex = D.words.find(w => w.word.toLowerCase() === c.word.toLowerCase());
     if (ex) { const tags = [...new Set([...ex.tags, ...c.tags])]; Object.assign(ex, c, { tags, persian_meaning: c.persian_meaning || ex.persian_meaning }); updated++; }
     else {
@@ -371,7 +378,7 @@ function entryHeader(w) {
   const L = w.leitner;
   const boxLabel = L.learned ? 'Learned' : 'Box ' + L.box + ' · ' + BOXLBL[L.box];
   return `<section class="blueprint col" style="padding:var(--space-6) var(--space-4) var(--space-4);gap:var(--space-2)">${CORNERS}
-    <div class="row" style="justify-content:space-between;gap:8px"><span class="tag tag-accent">${h(boxLabel)}</span><span style="font-size:10px;letter-spacing:.12em;text-transform:uppercase" class="muted">${h(w.source)}</span></div>
+    <div class="row" style="justify-content:space-between;gap:8px"><span class="row" style="gap:6px"><span class="tag tag-accent">${h(boxLabel)}</span><span class="tag tag-neutral">${h(catShort(catOf(w)))}</span></span><span style="font-size:10px;letter-spacing:.12em;text-transform:uppercase" class="muted">${h(w.source)}</span></div>
     <h1 style="font-size:54px;margin:var(--space-6) 0 0;line-height:1;word-break:break-word">${h(w.word)}</h1>
     <div class="row" style="gap:var(--space-3);flex-wrap:wrap">
       <span style="font-size:15px" class="muted">${h(w.syllables)}</span><span style="font-size:15px">${h(w.pronunciation)}</span>
@@ -406,7 +413,7 @@ function homeView() {
   if (!words.length) note = 'No words yet. Add your first Longman entry.';
   else if (due.length) note = 'Knew it moves a word up one box. Didn’t know moves it back one.';
   else {
-    const up = active.filter(w => !tag || w.tags.includes(tag)).map(w => w.leitner.next_review).sort()[0];
+    const up = active.filter(w => (!tag || w.tags.includes(tag)) && (!S.catFilter || catOf(w) === S.catFilter)).map(w => w.leitner.next_review).sort()[0];
     if (!up) note = 'All caught up — nothing left in rotation.';
     else { const n = active.filter(w => w.leitner.next_review === up).length; const dd = diffDays(t, up); note = 'All caught up. Next: ' + (dd === 1 ? 'tomorrow' : 'in ' + dd + ' days') + ' · ' + n + (n === 1 ? ' word' : ' words') + '.'; }
   }
@@ -427,6 +434,7 @@ function homeView() {
           <label class="seg-opt"><input type="radio" name="mode" data-act="mode" data-v="flip" ${D.mode === 'flip' ? 'checked' : ''}>Flip card</label>
           <label class="seg-opt"><input type="radio" name="mode" data-act="mode" data-v="type" ${D.mode === 'type' ? 'checked' : ''}>Type the word</label>
         </div></div>
+      <div class="field"><label>Category</label><select class="input" data-in="catFilter" data-r="1"><option value="">All categories</option>${CATS.map(c => `<option value="${c[0]}" ${c[0] === S.catFilter ? 'selected' : ''}>${c[1]}</option>`).join('')}</select></div>
       ${tags.length ? `<div class="field"><label>Topic</label><select class="input" data-in="tagFilter" data-r="1"><option value="">All topics</option>${tags.map(x => `<option value="${h(x)}" ${x === tag ? 'selected' : ''}>${h(x)}</option>`).join('')}</select></div>` : ''}
       ${btnP('start', 'START REVIEW', 'min-height:52px;font-size:18px;letter-spacing:.04em', due.length ? '' : 'disabled')}
     </section>
@@ -447,6 +455,7 @@ function importDyn() {
   }).join('');
   return `${ip.error ? `<div class="err">${h(ip.error)}</div>` : ''}
     ${ip.items.length ? `<div class="col" style="border-top:1px solid var(--color-divider)">${rows}</div>
+      <div class="field"><label>Category for these words</label><div class="seg">${CATS.map(c => `<label class="seg-opt" style="font-size:12px;padding:6px 4px"><input type="radio" name="icat" data-act="impcat" data-v="${c[0]}" ${S.importCat === c[0] ? 'checked' : ''}>${c[1]}</label>`).join('')}</div></div>
       <div class="field"><label>Topic tags for these words (comma separated)</label><input class="input" data-in="importTags" value="${h(S.importTags)}" placeholder="e.g. weather, IELTS"></div>` : ''}
     ${btnP('import', ip.items.length > 1 ? 'IMPORT ' + ip.items.length + ' WORDS' : 'IMPORT WORD', 'min-height:48px;font-size:16px', ip.items.length ? '' : 'disabled')}
     ${S.importMsg ? `<div class="ok-msg">${ic('check')}${h(S.importMsg)}</div>` : ''}`;
@@ -471,13 +480,14 @@ function listDyn() {
     if (lf === 'learned' && !w.leitner.learned) return false;
     if (lf[0] === 'b' && (w.leitner.learned || w.leitner.box !== Number(lf[1]))) return false;
     if (listTag && !w.tags.includes(listTag)) return false;
+    if (S.listCat && catOf(w) !== S.listCat) return false;
     if (q) { const hay = [w.word, w.persian_meaning, ...w.tags, ...w.senses.map(s => s.definition), ...w.derived_forms.map(d => d.word)].join(' ').toLowerCase(); if (!hay.includes(q)) return false; }
     return true;
   }).sort((a, b) => a.word.localeCompare(b.word));
   const rows = list.map(w => `<button class="cellbtn hov" data-act="open" data-id="${h(w.id)}" style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 4px;border-bottom:1px solid var(--color-divider)">
       <div class="col" style="gap:2px;min-width:0"><div class="row" style="align-items:baseline;gap:8px"><span style="font-family:var(--font-heading);font-weight:600;font-size:21px">${h(w.word)}</span><span style="font-size:12px;font-style:italic;color:var(--color-accent-700)">${h(w.part_of_speech)}</span></div>
         <span style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" class="muted">${h((w.senses[0] && w.senses[0].definition) || w.persian_meaning)}</span></div>
-      <div class="col" style="align-items:flex-end;gap:4px"><span class="tag tag-accent">${w.leitner.learned ? 'Learned' : 'Box ' + w.leitner.box}</span><span style="font-size:11px" class="muted">${rel(w)}</span></div></button>`).join('');
+      <div class="col" style="align-items:flex-end;gap:4px"><span class="tag tag-accent">${w.leitner.learned ? 'Learned' : 'Box ' + w.leitner.box}</span><span style="font-size:11px" class="muted">${rel(w)} · ${catShort(catOf(w))}</span></div></button>`).join('');
   return `<span style="font-size:12px" class="muted">${list.length} ${list.length === 1 ? 'word' : 'words'}</span>
     <div class="col" style="border-top:1px solid var(--color-divider)">${rows}</div>
     ${list.length ? '' : '<p style="text-align:center;font-size:14px;padding:var(--space-6) 0" class="muted">No words match.</p>'}`;
@@ -489,6 +499,7 @@ function wordsView() {
       <div style="position:relative"><span style="position:absolute;left:12px;top:14px;color:var(--color-neutral-700)">${ic('search')}</span>
         <input class="input" data-in="q" data-live="list" style="padding-left:36px;min-height:44px;font-size:15px" value="${h(S.q)}" placeholder="Search words, meanings, tags"></div>
       <div class="row" style="gap:6px;flex-wrap:wrap">${fdefs.map(([k, l]) => `<button class="tag ${S.listFilter === k ? 'tag-accent' : ''}" data-act="filter" data-v="${k}" style="cursor:pointer;font-family:var(--font-body);font-size:12px;min-height:34px;padding:0 12px;border:1px solid var(--color-divider)">${l}</button>`).join('')}</div>
+      <select class="input" data-in="listCat" data-r="1"><option value="">All categories</option>${CATS.map(c => `<option value="${c[0]}" ${c[0] === S.listCat ? 'selected' : ''}>${c[1]}</option>`).join('')}</select>
       ${tags.length ? `<select class="input" data-in="listTag" data-r="1"><option value="">All topics</option>${tags.map(x => `<option value="${h(x)}" ${x === listTag ? 'selected' : ''}>${h(x)}</option>`).join('')}</select>` : ''}
     </div>
     <div id="listdyn" class="col" style="gap:var(--space-3)">${listDyn()}</div>`;
@@ -513,6 +524,7 @@ function statsView() {
   return `<h2 style="margin:0">Progress</h2>
     <div class="grid-b" style="grid-template-columns:repeat(2,minmax(0,1fr))">${tiles}</div>
     <section class="col" style="gap:var(--space-3)"><h6 style="margin:0" class="muted">Words by box</h6>${bars}</section>
+    <section class="col" style="gap:var(--space-3)"><h6 style="margin:0" class="muted">Words by category</h6>${CATS.map(c => { const n = words.filter(w => catOf(w) === c[0]).length; return `<div style="display:grid;grid-template-columns:116px minmax(0,1fr) 32px;gap:10px;align-items:center"><span style="font-size:13px">${c[1]}</span><div style="height:14px;border:1px solid var(--color-divider);position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:${Math.round(n / tot * 100)}%;background:var(--color-accent)"></div></div><span style="font-family:var(--font-heading);font-weight:600;font-size:16px;text-align:right">${n}</span></div>`; }).join('')}</section>
     <section class="blueprint col" style="padding:var(--space-4);gap:var(--space-3)">${CORNERS}
       <div class="row" style="justify-content:space-between;align-items:baseline;gap:8px"><h6 style="margin:0" class="muted">Reviews · last 14 days</h6>
         <div class="row muted" style="gap:10px;font-size:11px"><span class="row" style="gap:4px"><span style="width:8px;height:8px;background:var(--color-accent);display:inline-block"></span>Knew</span><span class="row" style="gap:4px"><span style="width:8px;height:8px;background:var(--color-neutral-400);display:inline-block"></span>Missed</span></div></div>
@@ -591,6 +603,7 @@ function detailView() {
       <div class="grid-b" style="grid-template-columns:repeat(4,minmax(0,1fr))">${facts}</div>
       <span style="font-size:12px" class="muted">Move to box</span><div class="seg">${moves}</div></section>
     <section class="col" style="gap:var(--space-3)"><h6 style="margin:0" class="muted">Edit</h6>
+      <div class="field"><label>Category</label><div class="seg">${CATS.map(c => `<label class="seg-opt" style="font-size:12px;padding:6px 4px"><input type="radio" name="dcat" data-act="setcat" data-v="${c[0]}" ${catOf(w) === c[0] ? 'checked' : ''}>${c[1]}</label>`).join('')}</div></div>
       <div class="field"><label>Persian meaning</label><input class="input fa" dir="rtl" data-in="editPersian" style="min-height:44px;font-size:15px" value="${h(S.editPersian)}" placeholder="معنی فارسی"></div>
       <div class="field"><label>Topic tags (comma separated)</label><input class="input" data-in="editTags" style="min-height:44px" value="${h(S.editTags)}" placeholder="e.g. weather, IELTS"></div>
       <div class="row" style="gap:var(--space-3)"><button class="btn btn-secondary" style="min-height:44px;padding:0 20px" data-act="saveedits">Save</button><span style="font-size:13px;color:var(--color-accent-800)">${h(S.savedMsg)}</span></div>
@@ -639,6 +652,8 @@ document.addEventListener('click', e => {
     case 'open': openDetail(id); break;
     case 'back': go('words'); break;
     case 'speak': { const w = find(id); if (w) speak(w.word); break; }
+    case 'impcat': S.importCat = v; render(); break;
+    case 'setcat': updateWord(S.detailId, w => { w.category = v; }, 'Saved'); break;
     case 'move': moveTo(S.detailId, n); break;
     case 'saveedits': updateWord(S.detailId, w => { w.persian_meaning = S.editPersian.trim(); w.tags = [...new Set(S.editTags.split(',').map(x => x.trim()).filter(Boolean))]; }, 'Saved'); break;
     case 'saveraw': saveRaw(); break;
