@@ -358,14 +358,41 @@ function exportBackup() {
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
   S.backupMsg = 'Backup downloaded.'; render();
 }
+let restoreMode = 'merge';
+function mergeData(local, inc) {
+  const out = { words: local.words.map(w => w), log: Object.assign({}, local.log), mode: local.mode, settings: local.settings };
+  const idx = new Map(out.words.map((w, i) => [w.word.toLowerCase(), i]));
+  let added = 0, updated = 0;
+  inc.words.forEach(iw => {
+    if (!iw || !iw.word || !iw.leitner) return;
+    const k = String(iw.word).toLowerCase();
+    if (!idx.has(k)) { out.words.push(Object.assign({ id: 'w' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), tags: [], senses: [], derived_forms: [] }, iw)); idx.set(k, out.words.length - 1); added++; return; }
+    const lw = out.words[idx.get(k)];
+    const lt = lw.leitner.last_review || '', it = iw.leitner.last_review || '';
+    if (it > lt) {
+      out.words[idx.get(k)] = Object.assign({}, iw, { id: lw.id, tags: [...new Set([...(lw.tags || []), ...(iw.tags || [])])], persian_meaning: iw.persian_meaning || lw.persian_meaning });
+      updated++;
+    } else {
+      lw.tags = [...new Set([...(lw.tags || []), ...(iw.tags || [])])]; lw.persian_meaning = lw.persian_meaning || iw.persian_meaning || '';
+    }
+  });
+  Object.entries(inc.log || {}).forEach(([d, v]) => { const l = out.log[d] || { c: 0, w: 0 }; out.log[d] = { c: Math.max(l.c, v.c || 0), w: Math.max(l.w, v.w || 0) }; });
+  return { data: out, added, updated };
+}
 function importBackup(file) {
   const fr = new FileReader();
   fr.onload = () => {
     try {
       const d = JSON.parse(fr.result);
       if (!d || !Array.isArray(d.words)) throw new Error('not a Leitner backup');
-      if (!confirm('Replace ALL current data with this backup (' + d.words.length + ' words)?')) return;
-      localStorage.setItem(KEY, JSON.stringify(d)); D = loadData(); S.backupMsg = 'Backup restored: ' + D.words.length + ' words.'; render();
+      if (restoreMode === 'replace') {
+        if (!confirm('Replace ALL current data with this backup (' + d.words.length + ' words)?')) return;
+        localStorage.setItem(KEY, JSON.stringify(d)); D = loadData(); S.backupMsg = 'Backup restored: ' + D.words.length + ' words.';
+      } else {
+        const r = mergeData(D, d); localStorage.setItem(KEY, JSON.stringify(r.data)); D = loadData();
+        S.backupMsg = 'Merged: ' + r.added + ' new words added, ' + r.updated + ' updated with newer progress. Total ' + D.words.length + ' words.';
+      }
+      render();
     } catch (e) { S.backupMsg = 'Could not restore: ' + e.message; render(); }
   };
   fr.readAsText(file);
@@ -538,7 +565,8 @@ function statsView() {
       <label class="row" style="gap:10px;font-size:14px;min-height:36px;cursor:pointer"><input type="checkbox" data-act="toggle" data-v="requeueWrong" ${st.requeueWrong ? 'checked' : ''}>Repeat missed words at the end of the session</label>
       <span style="font-size:12px" class="muted">Backup</span>
       <div class="row" style="gap:var(--space-3);flex-wrap:wrap"><button class="btn btn-secondary" style="min-height:44px;padding:0 16px" data-act="export">Download backup</button>
-        <button class="btn btn-secondary" style="min-height:44px;padding:0 16px" data-act="restore">Restore backup</button><input type="file" id="restoreFile" accept="application/json,.json" style="display:none"></div>
+        <button class="btn btn-secondary" style="min-height:44px;padding:0 16px" data-act="restore" data-v="merge">Merge backup</button>
+        <button class="btn btn-ghost" style="min-height:44px;padding:0 12px" data-act="restore" data-v="replace">Replace with backup</button><input type="file" id="restoreFile" accept="application/json,.json" style="display:none"></div>
       ${S.backupMsg ? `<span style="font-size:13px;color:var(--color-accent-800)">${h(S.backupMsg)}</span>` : ''}
     </section>`;
 }
@@ -670,7 +698,7 @@ document.addEventListener('click', e => {
     case 'accent': D.settings.accent = v; save(); render(); break;
     case 'toggle': D.settings[v] = !D.settings[v]; save(); render(); break;
     case 'export': exportBackup(); break;
-    case 'restore': document.getElementById('restoreFile').click(); break;
+    case 'restore': restoreMode = v; document.getElementById('restoreFile').click(); break;
   }
 });
 document.addEventListener('input', e => {
@@ -681,7 +709,7 @@ document.addEventListener('input', e => {
   else if (el.dataset.r) render();
 });
 document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.dataset && e.target.dataset.in === 'typed') { e.preventDefault(); checkTyped(false); } });
-document.addEventListener('change', e => { if (e.target.id === 'restoreFile' && e.target.files[0]) importBackup(e.target.files[0]); });
+document.addEventListener('change', e => { if (e.target.id === 'restoreFile' && e.target.files[0]) { importBackup(e.target.files[0]); e.target.value = ''; } });
 
 try { speechSynthesis.getVoices(); } catch (e) {}
 render();
